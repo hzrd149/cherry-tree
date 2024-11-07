@@ -44,7 +44,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: VITE_BASE=/nostr-epoxy-client pnpm vite build
+        run: VITE_BASE=/cherry-tree pnpm vite build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

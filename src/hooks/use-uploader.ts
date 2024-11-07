@@ -35,6 +35,8 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
     try {
       setLoading(true);
       setError(undefined);
+      setStarted({});
+      setUploaded({});
       resetErrors();
       const controller = new AbortController();
       setController(controller);

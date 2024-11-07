@@ -28,7 +28,7 @@ importers:
         version: 1.5.0
       blossom-client-sdk:
         specifier: 0.0.0-next-20241107141841
-        version: link:../blossom-client-sdk
+        version: 0.0.0-next-20241107141841
       chart.js:
         specifier: ^4.4.6
         version: 4.4.6
@@ -1339,6 +1339,10 @@ packages:
   better-path-resolve@1.0.0:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
     engines: {node: '>=4'}
+
+  blossom-client-sdk@0.0.0-next-20241107141841:
+    resolution: {integrity: sha512-br7JUZrMDsURQowBObGdj6VEWbLslacUpKjONLgpRvN2w11fSt39Xdgd0pYjuPRtqTHOLClGXxyItYTQJQMlkw==}
+    engines: {node: '>=18'}
 
   brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -4126,6 +4130,11 @@ snapshots:
   better-path-resolve@1.0.0:
     dependencies:
       is-windows: 1.0.2
+
+  blossom-client-sdk@0.0.0-next-20241107141841:
+    dependencies:
+      '@cashu/cashu-ts': 2.0.0-rc1
+      '@noble/hashes': 1.5.0
 
   brace-expansion@1.1.11:
     dependencies:

@@ -122,7 +122,7 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
 
   useEffect(() => {
     return () => controller?.abort();
-  }, []);
+  }, [controller]);
 
   return { download, downloaded, errors, verified, loading };
 }

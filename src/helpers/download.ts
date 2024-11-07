@@ -24,6 +24,8 @@ export async function downloadChunks(servers: string[], hashes: (string | null)[
   const parallel = opts?.parallel ?? 5;
   let batch: Promise<void>[] = [];
   for (let index = 0; index < hashes.length; index++) {
+    if (opts?.signal?.aborted) break;
+
     const hash = hashes[index];
     if (hash === null) continue;
 

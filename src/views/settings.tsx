@@ -35,6 +35,8 @@ export default function SettingsView() {
 
   const [loading, setLoading] = useState(false);
   const clear = async () => {
+    if (!("storage" in navigator)) return;
+
     try {
       setLoading(true);
       const folder = await navigator.storage.getDirectory();

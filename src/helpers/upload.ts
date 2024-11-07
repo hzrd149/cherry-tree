@@ -10,11 +10,14 @@ export async function uploadChunks(servers: string[], chunks: Chunk[], opts?: Up
   let batch: Promise<any>[] = [];
 
   for (const chunk of chunks) {
+    if (opts?.signal?.aborted) break;
     batch.push(multiServerUpload(servers, chunk, opts));
 
     // wait for batch
-    if (batch.length >= parallel) await Promise.allSettled(batch);
-    batch = [];
+    if (batch.length >= parallel) {
+      await Promise.allSettled(batch);
+      batch = [];
+    }
   }
 
   // wait for complete

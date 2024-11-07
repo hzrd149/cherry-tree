@@ -25,8 +25,11 @@ relays.subscribe((relays) => {
 const archives = new BehaviorSubject<NostrEvent[]>([]);
 const onlineRelays = new BehaviorSubject<NostrEvent[]>([]);
 
-const downloaders = new BehaviorSubject(5);
-const uploaders = new BehaviorSubject(5);
+const downloaders = new BehaviorSubject(parseInt(localStorage.getItem("downloaders") ?? "5"));
+downloaders.subscribe((c) => localStorage.setItem("downloaders", String(c)));
+
+const uploaders = new BehaviorSubject(parseInt(localStorage.getItem("uploaders") ?? "5"));
+uploaders.subscribe((c) => localStorage.setItem("uploaders", String(c)));
 
 const state = {
   files,

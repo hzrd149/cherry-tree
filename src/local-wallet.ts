@@ -38,6 +38,7 @@ export default class LocalWallet {
         const token = JSON.parse(storedProofs) as Token;
         this.mint = new CashuMint(token.mint);
         this.wallet = new CashuWallet(this.mint, { unit: token.unit });
+        await this.wallet.loadMint();
         this.proofs = token.proofs;
       }
     } catch (error) {
@@ -68,37 +69,37 @@ export default class LocalWallet {
 
     return await this.runInLock(async () => {
       // attempt to collect enough tokens to pay
-      const proofs = Array.from(this.proofs).sort((a, b) => b.amount - a.amount);
+      // const proofs = Array.from(this.proofs).sort((a, b) => b.amount - a.amount);
 
-      let hand: Proof[] = [];
-      let remaining = amount;
-      for (const proof of proofs) {
-        if (proof.amount >= remaining) {
-          hand.push(proof);
-          remaining -= proof.amount;
-        }
-        if (remaining === 0) break;
-      }
+      // let hand: Proof[] = [];
+      // let remaining = amount;
+      // for (const proof of proofs) {
+      //   if (proof.amount >= remaining) {
+      //     hand.push(proof);
+      //     remaining -= proof.amount;
+      //   }
+      //   if (remaining === 0) break;
+      // }
 
-      // if successful remove proofs from wallet
-      if (remaining === 0) {
-        for (const proof of hand) {
-          this.proofs.splice(this.proofs.indexOf(proof), 1);
-        }
-        await this.save();
-        return { proofs: hand, mint: this.mint!.mintUrl, unit: this.wallet!.unit } satisfies Token;
-      } else {
-        // didn't have enough coins to pay exact change
-        const { send, keep } = await this.wallet!.send(amount, this.proofs, opts);
-        this.proofs = keep;
-        await this.save();
+      // // if successful remove proofs from wallet
+      // if (remaining === 0) {
+      //   for (const proof of hand) {
+      //     this.proofs.splice(this.proofs.indexOf(proof), 1);
+      //   }
+      //   await this.save();
+      //   return { proofs: hand, mint: this.mint!.mintUrl, unit: this.wallet!.unit } satisfies Token;
+      // } else {
+      // didn't have enough coins to pay exact change
+      const { send, keep } = await this.wallet!.send(amount, this.proofs, opts);
+      this.proofs = keep;
+      await this.save();
 
-        return {
-          proofs: send,
-          mint: this.mint!.mintUrl,
-          unit: this.wallet!.unit,
-        } satisfies Token;
-      }
+      return {
+        proofs: send,
+        mint: this.mint!.mintUrl,
+        unit: this.wallet!.unit,
+      } satisfies Token;
+      // }
     });
   }
 
@@ -118,6 +119,7 @@ export default class LocalWallet {
     if (!this.mint || !this.wallet) {
       this.mint = new CashuMint(token.mint);
       this.wallet = new CashuWallet(this.mint, { unit: token.unit });
+      await this.wallet.loadMint();
     } else if (token.mint !== this.mint.mintUrl) {
       throw new Error("Cant receive tokens from another mint");
     }

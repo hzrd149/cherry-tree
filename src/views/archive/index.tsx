@@ -20,7 +20,7 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
   const type = getTagValue(archive, "m");
   const summary = getTagValue(archive, "summary");
   const root = getTagValue(archive, "x");
-  const persist = useDisclosure({ defaultIsOpen: !!navigator.storage });
+  const persist = useDisclosure({ defaultIsOpen: "storage" in navigator });
 
   const tree = useMemo(() => decodeTree(base64ToBytes(archive.content)), [archive]);
   const hashes = useMemo(() => getLeafNodes(tree).map((c) => bytesToHex(c.hash)), [tree]);

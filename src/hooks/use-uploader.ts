@@ -17,6 +17,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
   const [controller, setController] = useState<AbortController>();
 
   const [error, setError] = useState<Error>();
+  const [started, setStarted] = useState<Record<string, string[]>>({});
   const [uploaded, setUploaded] = useState<Record<string, string[]>>({});
   const [errors, setHashError, resetErrors] = useErrorRecords();
 
@@ -43,6 +44,9 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
       await uploadChunks(servers, chunks, {
         signal: controller.signal,
         parallel: state.uploaders.value,
+        onStart: (server, chunk) => {
+          setStarted((v) => ({ ...v, [chunk.hash]: [...(v[chunk.hash] ?? []), server] }));
+        },
         onUpload: (server, chunk) => {
           setUploaded((v) => ({ ...v, [chunk.hash]: [...(v[chunk.hash] ?? []), server] }));
           if (folder) saveChunk(folder, chunk);
@@ -59,7 +63,9 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
         onAuth: async (_server, blob) => {
           return await createUploadAuth(typeof blob === "string" ? blob : blob.hash, signer);
         },
-        onError: (server, chunk, error) => setHashError(chunk.hash, server, error),
+        onError: (server, chunk, error) => {
+          setHashError(chunk.hash, server, error);
+        },
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -73,7 +79,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
   // stop upload on unmount
   useEffect(() => {
     return () => controller?.abort();
-  }, []);
+  }, [controller]);
 
-  return { upload, loading, errors, uploaded, error };
+  return { upload, loading, errors, uploaded, started, error };
 }

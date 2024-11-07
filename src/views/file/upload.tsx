@@ -30,9 +30,9 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
   const [servers, setServers] = useState<string[]>(state.servers.value);
   const anon = useDisclosure({ defaultIsOpen: true });
 
-  const { upload, loading, errors, uploaded, error } = useUploader(servers, file.chunks, anon.isOpen);
+  const { upload, loading, errors, uploaded, started, error } = useUploader(servers, file.chunks, anon.isOpen);
 
-  if (Object.keys(uploaded).length > 0) {
+  if (Object.keys(uploaded).length > 0 || Object.keys(errors).length > 0 || Object.keys(started).length > 0) {
     return (
       <>
         {error ? (
@@ -42,7 +42,20 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
             <Progress hasStripe value={(Object.keys(uploaded).length / file.chunks.length) * 100} size="lg" />
             <Flex gap="2px" wrap="wrap" p="1" borderWidth="1px" rounded="sm">
               {file.chunks.map((chunk) => (
-                <Box key={chunk.hash} w="4" h="4" bg={uploaded[chunk.hash] ? "green.500" : "gray.500"} />
+                <Box
+                  key={chunk.hash}
+                  w="4"
+                  h="4"
+                  bg={
+                    errors[chunk.hash]
+                      ? "red.500"
+                      : uploaded[chunk.hash]
+                        ? "green.500"
+                        : started[chunk.hash]
+                          ? "blue.500"
+                          : "gray.500"
+                  }
+                />
               ))}
             </Flex>
             <Box>
@@ -50,7 +63,7 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
                 <Box key={hash} color="red.500">
                   <Text fontWeight="bold">{hash.slice(0, 8)}</Text>
                   {Object.entries(servers).map(([server, error]) => (
-                    <Text>
+                    <Text key={server}>
                       {server}: {error.message}
                     </Text>
                   ))}

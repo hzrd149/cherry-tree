@@ -1,4 +1,4 @@
-import { AmountPreference, CashuMint, CashuWallet, Proof, Token, TokenEntry } from "@cashu/cashu-ts";
+import { CashuMint, CashuWallet, OutputAmounts, Proof, Token } from "@cashu/cashu-ts";
 
 export default class LocalWallet {
   private mint?: CashuMint;
@@ -35,9 +35,9 @@ export default class LocalWallet {
     try {
       const storedProofs = localStorage.getItem(this.storageKey);
       if (storedProofs) {
-        const token: TokenEntry = JSON.parse(storedProofs);
+        const token = JSON.parse(storedProofs) as Token;
         this.mint = new CashuMint(token.mint);
-        this.wallet = new CashuWallet(this.mint);
+        this.wallet = new CashuWallet(this.mint, { unit: token.unit });
         this.proofs = token.proofs;
       }
     } catch (error) {
@@ -46,11 +46,12 @@ export default class LocalWallet {
   }
 
   async save() {
-    if (!this.mint) throw new Error("Wallet not setup");
+    if (!this.mint || !this.wallet) throw new Error("Wallet not setup");
     try {
-      const token: TokenEntry = {
+      const token: Token = {
         proofs: this.proofs,
         mint: this.mint.mintUrl,
+        unit: this.wallet.unit,
       };
       localStorage.setItem(this.storageKey, JSON.stringify(token));
     } catch (error) {
@@ -85,60 +86,58 @@ export default class LocalWallet {
           this.proofs.splice(this.proofs.indexOf(proof), 1);
         }
         await this.save();
-        return { token: [{ proofs: hand, mint: this.mint!.mintUrl }] } satisfies Token;
+        return { proofs: hand, mint: this.mint!.mintUrl, unit: this.wallet!.unit } satisfies Token;
       } else {
         // didn't have enough coins to pay exact change
-        const { send, returnChange } = await this.wallet!.send(amount, this.proofs, opts);
-        this.proofs = returnChange;
+        const { send, keep } = await this.wallet!.send(amount, this.proofs, opts);
+        this.proofs = keep;
         await this.save();
 
         return {
-          token: [
-            {
-              proofs: send,
-              mint: this.mint!.mintUrl,
-            },
-          ],
+          proofs: send,
+          mint: this.mint!.mintUrl,
+          unit: this.wallet!.unit,
         } satisfies Token;
       }
     });
   }
 
-  public async optimize(amounts: AmountPreference[]) {
+  public async optimize(amounts: OutputAmounts["sendAmounts"]) {
     return this.runInLock(async () => {
       if (!this.mint || !this.wallet) throw new Error("Wallet not setup");
 
-      const { send, returnChange } = await this.wallet.send(this.getBalance(), this.proofs, { preference: amounts });
-      this.proofs = [...send, ...returnChange];
+      const { send, keep } = await this.wallet.send(this.getBalance(), this.proofs, {
+        outputAmounts: { sendAmounts: amounts },
+      });
+      this.proofs = [...send, ...keep];
       await this.save();
     });
   }
 
-  public async receive(token: Token, opts?: Parameters<CashuWallet["receiveTokenEntry"]>[1]) {
-    for (const entry of token.token) {
-      if (!this.mint || !this.wallet) {
-        this.mint = new CashuMint(entry.mint);
-        this.wallet = new CashuWallet(this.mint);
-      } else if (entry.mint !== this.mint.mintUrl) {
-        throw new Error("Cant receive tokens from another mint");
-      }
+  public async receive(token: Token, opts?: Parameters<CashuWallet["receive"]>[1]) {
+    if (!this.mint || !this.wallet) {
+      this.mint = new CashuMint(token.mint);
+      this.wallet = new CashuWallet(this.mint, { unit: token.unit });
+    } else if (token.mint !== this.mint.mintUrl) {
+      throw new Error("Cant receive tokens from another mint");
+    }
 
-      try {
-        const received = await this.wallet.receiveTokenEntry(entry, opts);
-        this.proofs = [...this.proofs, ...received];
-        await this.save();
-        return this.getBalance();
-      } catch (error) {
-        console.error("Error receiving token:", error);
-      }
+    try {
+      const received = await this.wallet.receive(token, opts);
+      this.proofs = [...this.proofs, ...received];
+      await this.save();
+      return this.getBalance();
+    } catch (error) {
+      console.error("Error receiving token:", error);
     }
   }
 
   public withdrawAll() {
     if (!this.mint || !this.wallet) throw new Error("Wallet not setup");
-    const token: TokenEntry = {
+    const token: Token = {
       proofs: this.proofs,
       mint: this.mint.mintUrl,
+      unit: this.wallet.unit,
     };
     return token;
   }

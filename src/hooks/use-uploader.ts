@@ -51,7 +51,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
           // optimize the wallet on the first payment
           if (!optimized) {
             optimized = true;
-            await wallet.optimize([{ amount: request.amount, count: chunks.length }]);
+            await wallet.optimize(new Array(chunks.length).fill(request.amount));
           }
 
           return await wallet.send(request.amount);

@@ -22,7 +22,7 @@ function BaseNav({ setMode }: { setMode: (mode: Mode) => void }) {
 function Withdraw({ setMode }: { setMode: (mode: Mode) => void }) {
   const wallet = useWallet();
   const token = useMemo(() => {
-    return getEncodedTokenV4({ token: [wallet.withdrawAll()] });
+    return getEncodedTokenV4(wallet.withdrawAll());
   }, [wallet]);
 
   const done = () => {

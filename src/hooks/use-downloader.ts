@@ -69,7 +69,7 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
           // optimize the wallet on the first payment
           if (!optimized) {
             optimized = true;
-            await wallet.optimize([{ amount: request.amount, count: needDownload.length }]);
+            await wallet.optimize(new Array(needDownload.length).fill(request.amount));
           }
 
           return await wallet.send(request.amount);

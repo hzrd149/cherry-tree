@@ -1,16 +1,17 @@
-import { BlossomOptions, downloadBlob } from "./blossom";
+import { downloadBlob, DownloadOptions } from "blossom-client-sdk/actions/download";
 
-type DownloadOptions = BlossomOptions & {
+type DownloadChunksOptions = DownloadOptions<string> & {
   parallel?: number;
   onBlob?: (chunk: Blob, index: number) => Promise<void>;
   onError?: (hash: string, error: Error) => void;
 };
 
-export async function downloadChunks(servers: string[], hashes: (string | null)[], opts?: DownloadOptions) {
+export async function downloadChunks(servers: string[], hashes: (string | null)[], opts?: DownloadChunksOptions) {
   const download = async (hash: string, index: number) => {
     for (const server of servers) {
       try {
-        const blob = await downloadBlob(server, hash, opts);
+        const res = await downloadBlob(server, hash, opts);
+        const blob = await res.blob();
         await opts?.onBlob?.(blob, index);
         return;
       } catch (error) {

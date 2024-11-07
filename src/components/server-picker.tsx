@@ -1,8 +1,8 @@
 import { useState, FormEventHandler, useEffect } from "react";
 import { Button, CloseButton, Flex, Icon, Input, Link, Text, Tooltip } from "@chakra-ui/react";
 import Favicon from "./media-server-favicon";
-import { getPaymentRequestFromHeaders, PaymentRequest } from "../helpers/blossom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { getPaymentRequestFromHeaders, PaymentRequest } from "blossom-client-sdk";
 
 function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
   const [server, setServer] = useState("");

@@ -59,7 +59,7 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
       };
 
       // download missing chunks
-      let optimized = false;
+      // let optimized = false;
       const blobs: (Blob | null)[] = new Array(hashes.length).fill(null);
       const needDownload = downloaded.map((c, i) => (c === null ? hashes[i] : null));
       await downloadChunks(servers, needDownload, {
@@ -67,12 +67,12 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
         signal: controller.signal,
         onPayment: async (_server, _blob, request) => {
           // optimize the wallet on the first payment
-          if (!optimized) {
-            optimized = true;
-            await wallet.optimize(new Array(needDownload.length).fill(request.amount));
-          }
+          // if (!optimized) {
+          //   optimized = true;
+          //   await wallet.optimize(new Array(needDownload.length).fill(request.amount));
+          // }
 
-          return await wallet.send(request.amount);
+          return await wallet.send(request.amount, { pubkey: request.pubkey });
         },
         onBlob: async (blob, index) => {
           blobs[index] = blob;

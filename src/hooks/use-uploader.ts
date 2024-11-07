@@ -38,7 +38,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
       const controller = new AbortController();
       setController(controller);
 
-      let optimized = false;
+      // let optimized = false;
       const folder = persist && "storage" in navigator ? await navigator.storage.getDirectory() : undefined;
       await uploadChunks(servers, chunks, {
         signal: controller.signal,
@@ -49,12 +49,12 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
         },
         onPayment: async (_server, _blob, request) => {
           // optimize the wallet on the first payment
-          if (!optimized) {
-            optimized = true;
-            await wallet.optimize(new Array(chunks.length).fill(request.amount));
-          }
+          // if (!optimized) {
+          //   optimized = true;
+          //   await wallet.optimize(new Array(chunks.length).fill(request.amount));
+          // }
 
-          return await wallet.send(request.amount);
+          return await wallet.send(request.amount, { pubkey: request.pubkey });
         },
         onAuth: async (_server, blob) => {
           return await createUploadAuth(typeof blob === "string" ? blob : blob.hash, signer);

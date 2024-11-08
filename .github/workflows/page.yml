@@ -44,7 +44,7 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: VITE_BASE=/cherry-tree pnpm vite build
+        run: pnpm vite build --base /cherry-tree
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -60,7 +60,7 @@ export default function HomeView() {
           <ErrorBoundary key={archive.id}>
             <FileCard
               to={`/archive/${nevent}`}
-              name={getTagValue(archive, "title")}
+              name={getTagValue(archive, "name") || getTagValue(archive, "title")}
               type={getTagValue(archive, "m")}
               size={parseInt(getTagValue(archive, "size") ?? "")}
               copy={nevent}

@@ -19,7 +19,7 @@ import { Chunk } from "../../helpers/blob";
 import RainbowButton from "../../components/rainbow-button";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const title = getTagValue(archive, "title");
+  const title = getTagValue(archive, "name") || getTagValue(archive, "title");
   const summary = getTagValue(archive, "summary");
   const root = getTagValue(archive, "x");
 

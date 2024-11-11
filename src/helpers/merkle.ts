@@ -14,13 +14,13 @@ function merge(a: Uint8Array, b: Uint8Array) {
   return merged;
 }
 
-type TreeArray = [Uint8Array, TreeArray | null, TreeArray | null];
+type TreeArray = [Uint8Array] | [Uint8Array, TreeArray] | [Uint8Array, TreeArray, TreeArray];
 export function encodeTree(tree: MerkleNode) {
-  const toArray = (branch: MerkleNode): TreeArray => [
-    branch.hash,
-    branch.left ? toArray(branch.left) : null,
-    branch.right ? toArray(branch.right) : null,
-  ];
+  const toArray = (branch: MerkleNode): TreeArray => {
+    if (branch.left && branch.right) return [branch.hash, toArray(branch.left), toArray(branch.right)];
+    else if (branch.left) return [branch.hash, toArray(branch.left)];
+    else return [branch.hash];
+  };
 
   return encodeCBOR(toArray(tree));
 }

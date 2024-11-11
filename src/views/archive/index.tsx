@@ -16,7 +16,7 @@ import { CopyButton } from "../../components/copy-button";
 import useDownloader from "../../hooks/use-downloader";
 
 function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const title = getTagValue(archive, "title");
+  const title = getTagValue(archive, "name") || getTagValue(archive, "title");
   const type = getTagValue(archive, "m");
   const summary = getTagValue(archive, "summary");
   const root = getTagValue(archive, "x");

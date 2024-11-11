@@ -70,7 +70,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
 
       // add metadata
       if (metadata.isOpen) {
-        if (name) draft.tags.push(["title", name]);
+        if (name) draft.tags.push(["name", name]);
         if (summary) draft.tags.push(["summary", summary]);
         if (type) draft.tags.push(["m", type]);
         draft.tags.push(["size", String(file.file.size)]);

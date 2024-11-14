@@ -1,4 +1,18 @@
-import { Box, Button, Code, Flex, Heading, Spinner, Switch, Text, Tooltip, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Code,
+  Flex,
+  Heading,
+  Icon,
+  IconButton,
+  Spinner,
+  Switch,
+  Text,
+  Tooltip,
+  useDisclosure,
+} from "@chakra-ui/react";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -19,6 +33,7 @@ import {
   getArchiveSummary,
   isValidArchive,
 } from "../../helpers/archive";
+import { BiCode } from "react-icons/bi";
 
 function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
   const name = getArchiveName(archive);
@@ -27,6 +42,7 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
   const root = getTagValue(archive, "x");
   const hashes = useMemo(() => getArchiveChunkHashes(archive).map(bytesToHex), [archive]);
 
+  const raw = useDisclosure();
   const persist = useDisclosure({ defaultIsOpen: "storage" in navigator });
 
   const [servers, setServers] = useState<string[]>(() =>
@@ -46,10 +62,19 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
   return (
     <Flex gap="2" direction="column">
       <Box>
-        <CopyButton float="right" size="sm" value={nevent} aria-label="Copy link" variant="ghost" />
+        <ButtonGroup float="right" size="sm" variant="ghost">
+          <CopyButton value={nevent} aria-label="Copy link" />
+          <IconButton icon={<Icon as={BiCode} boxSize={6} />} aria-label="Show event" onClick={raw.onToggle} />
+        </ButtonGroup>
         <Heading size="md">{name || archive.id.slice(0, 8)}</Heading>
       </Box>
       {summary && <Text whiteSpace="pre-line">{summary}</Text>}
+
+      {raw.isOpen && (
+        <Code whiteSpace="pre" overflow="auto">
+          {JSON.stringify(archive, null, 2)}
+        </Code>
+      )}
 
       <Flex gap="2" justifyContent="space-between" alignItems="flex-end" mt="2">
         <Heading size="md">Servers</Heading>

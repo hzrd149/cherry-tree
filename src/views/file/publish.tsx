@@ -75,7 +75,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
       if (metadata.isOpen) {
         if (name) draft.tags.push(["name", name]);
         if (summary) draft.tags.push(["summary", summary]);
-        if (type) draft.tags.push(["mine", type]);
+        if (type) draft.tags.push(["mime", type]);
       }
 
       // add size

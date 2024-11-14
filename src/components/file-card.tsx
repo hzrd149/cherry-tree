@@ -50,7 +50,7 @@ export default function FileCard({ file, name, type, size, copy, onRemove, error
       as={to ? LinkBox : undefined}
     >
       <ButtonGroup variant="ghost" right="2" top="2" position="absolute">
-        {copy && <CopyButton value={copy} aria-label="Copy Link" />}
+        {copy && <CopyButton value={copy} aria-label="Copy Link" size="sm" />}
         {onRemove && <CloseButton onClick={onRemove} />}
       </ButtonGroup>
       <Flex>

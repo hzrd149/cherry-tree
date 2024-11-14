@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -13,7 +13,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FiUploadCloud } from "react-icons/fi";
-import { bytesToHex } from "@noble/hashes/utils";
 import { Link } from "react-router-dom";
 
 import state, { ChunkedFile } from "../../state";
@@ -21,14 +20,21 @@ import FileCard from "../../components/file-card";
 import { formatFileSize } from "../../helpers/number";
 import ServerPicker from "../../components/server-picker";
 import RainbowButton from "../../components/rainbow-button";
-import MerkleTreeButton from "../../components/merkle-tree-button";
 import useUploader from "../../hooks/use-uploader";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { getRootHash } from "../../helpers/blob";
 
 export default function UploadFilePage({ file }: { file: ChunkedFile }) {
-  if (!file.tree || !file.chunks) return null;
+  if (!file.chunks) return null;
 
   const [servers, setServers] = useState<string[]>(state.servers.value);
   const anon = useDisclosure({ defaultIsOpen: true });
+
+  const rootHash = useMemo(() => {
+    if (!file.chunks) throw new Error("Missing chunks");
+    const hashes = file.chunks.map((c) => hexToBytes(c.hash));
+    return bytesToHex(getRootHash(hashes));
+  }, [file.chunks]);
 
   const { upload, loading, errors, uploaded, started, error } = useUploader(servers, file.chunks, anon.isOpen);
 
@@ -47,13 +53,15 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
                   w="4"
                   h="4"
                   bg={
-                    errors[chunk.hash]
-                      ? "red.500"
-                      : uploaded[chunk.hash]
-                        ? "green.500"
-                        : started[chunk.hash]
-                          ? "blue.500"
-                          : "gray.500"
+                    errors[chunk.hash] && uploaded[chunk.hash]
+                      ? "yellow.500"
+                      : errors[chunk.hash]
+                        ? "red.500"
+                        : uploaded[chunk.hash]
+                          ? "green.500"
+                          : started[chunk.hash]
+                            ? "blue.500"
+                            : "gray.500"
                   }
                 />
               ))}
@@ -86,15 +94,6 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
   return (
     <>
       <FileCard file={file.file} />
-      <Flex gap="2" justifyContent="space-between">
-        <Heading size="sm">Merkle Tree</Heading>
-        <MerkleTreeButton variant="link" tree={file.tree}>
-          details
-        </MerkleTreeButton>
-      </Flex>
-      <Code fontFamily="monospace" userSelect="all">
-        {bytesToHex(file.tree.hash)}
-      </Code>
 
       <Heading size="sm" mt="2">
         Chunks: {file.chunks.length} ({formatFileSize(file.chunks[0].size)})
@@ -106,6 +105,10 @@ export default function UploadFilePage({ file }: { file: ChunkedFile }) {
           </Tooltip>
         ))}
       </Flex>
+      <Heading size="sm" mt="2">
+        Root hash
+      </Heading>
+      <Code fontFamily="monospace">{rootHash}</Code>
 
       <Flex gap="2" justifyContent="space-between" alignItems="flex-end" mt="2">
         <Heading size="md">Upload Chunks</Heading>

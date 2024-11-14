@@ -1,27 +1,27 @@
 import { useEffect } from "react";
 import { Button, Flex, Heading } from "@chakra-ui/react";
-
-import FileUpload from "../components/file-picker";
-import state, { addFiles, addArchiveEvent, removeFile } from "../state";
-import FileCard from "../components/file-card";
 import { useNavigate } from "react-router-dom";
 import { neventEncode } from "nostr-tools/nip19";
+import { useObservable, useStoreQuery } from "applesauce-react/hooks";
+import { TimelineQuery } from "applesauce-core/queries";
+
+import FileUpload from "../components/file-picker";
+import state, { addFiles, removeFile, eventStore } from "../state";
+import FileCard from "../components/file-card";
 
 import { relayPool } from "../pool";
-import { getTagValue } from "../helpers/nostr";
-import { useObservable } from "../hooks/use-observable";
 import { ErrorBoundary } from "../components/error-boundary";
+import { getArchiveMimeType, getArchiveName, getArchiveSize, isValidArchive } from "../helpers/archive";
 
 export default function HomeView() {
   const files = useObservable(state.files);
   const navigate = useNavigate();
 
   const relays = useObservable(state.relays);
-  const archives = useObservable(state.archives);
+  const archives = useStoreQuery(TimelineQuery, [{ kinds: [2001] }])?.filter(isValidArchive);
 
   useEffect(() => {
-    const sub = relayPool.subscribeMany(relays, [{ kinds: [2001] }], { onevent: (event) => addArchiveEvent(event) });
-
+    const sub = relayPool.subscribeMany(relays, [{ kinds: [2001] }], { onevent: (event) => eventStore.add(event) });
     return () => sub.close();
   }, []);
 
@@ -60,9 +60,9 @@ export default function HomeView() {
           <ErrorBoundary key={archive.id}>
             <FileCard
               to={`/archive/${nevent}`}
-              name={getTagValue(archive, "name") || getTagValue(archive, "title")}
-              type={getTagValue(archive, "m")}
-              size={parseInt(getTagValue(archive, "size") ?? "")}
+              name={getArchiveName(archive)}
+              type={getArchiveMimeType(archive)}
+              size={getArchiveSize(archive)}
               copy={nevent}
             />
           </ErrorBoundary>

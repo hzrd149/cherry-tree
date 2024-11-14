@@ -1,6 +1,5 @@
 import { sha256 } from "@noble/hashes/sha256";
 import { CHUNK_SIZE_LARGE, CHUNK_SIZE_SMALL } from "../const";
-import { buildMerkleTree } from "./merkle";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import BlobHasher from "../worker/hasher";
 
@@ -75,11 +74,11 @@ export async function chunkFile(file: File, chunkSize: "small" | "large", handle
   }
   console.timeEnd("sha256");
 
-  console.time("merkle");
-  const tree = buildMerkleTree(hashes.map((hash) => ({ hash })));
-  console.timeEnd("merkle");
+  return chunks;
+}
 
-  return { tree, chunks };
+export function getRootHash(chunks: Uint8Array[]) {
+  return sha256(concatUint8Arrays(...chunks));
 }
 
 export async function concatBlobs(blobs: Blob[]): Promise<Blob> {
@@ -97,4 +96,17 @@ export async function concatBlobs(blobs: Blob[]): Promise<Blob> {
   });
 
   return new Blob([result], { type: blobs[0].type });
+}
+
+export function concatUint8Arrays(...arrays: Uint8Array[]) {
+  const totalSize = arrays.reduce((t, e) => t + e.length, 0);
+  const merged = new Uint8Array(totalSize);
+
+  let offset = 0;
+  for (const array of arrays) {
+    merged.set(array, offset);
+    offset += array.length;
+  }
+
+  return merged;
 }

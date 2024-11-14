@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom";
 import { Text } from "@chakra-ui/react";
+import { useObservable } from "applesauce-react/hooks";
 
 import state, { ChunkedFile } from "../../state";
 import UnchunkedFilePage from "./unchunked";
 import UploadFilePage from "./upload";
-import { useObservable } from "../../hooks/use-observable";
 
 export function FilePage({ file }: { file: ChunkedFile }) {
-  if (!file.chunks || !file.tree) return <UnchunkedFilePage file={file} />;
+  if (!file.chunks) return <UnchunkedFilePage file={file} />;
   return <UploadFilePage file={file} />;
 }
 

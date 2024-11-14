@@ -1,5 +1,6 @@
 import { Container } from "@chakra-ui/react";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import { QueryStoreProvider } from "applesauce-react";
 
 import { ErrorBoundary } from "./components/error-boundary";
 import HomeView from "./views/home";
@@ -9,6 +10,7 @@ import SettingsView from "./views/settings";
 import PublishView from "./views/file/publish";
 import ArchiveDownloadView from "./views/archive";
 import ArchiveUploadView from "./views/archive/upload";
+import { queryStore } from "./state";
 
 const router = createBrowserRouter([
   {
@@ -51,5 +53,9 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <QueryStoreProvider store={queryStore}>
+      <RouterProvider router={router} />
+    </QueryStoreProvider>
+  );
 }

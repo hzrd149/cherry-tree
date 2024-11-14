@@ -22,14 +22,13 @@ export default function UnchunkedFilePage({ file }: { file: ChunkedFile }) {
         update = [];
       }, 1000 / 30);
 
-      const { tree, chunks } = await chunkFile(file.file, size, {
+      const chunks = await chunkFile(file.file, size, {
         onChunk: (chunk) => update.push(chunk),
       });
 
       clearInterval(i);
 
-      updateFile(file.id, { tree, chunks });
-      console.log(tree);
+      updateFile(file.id, { chunks });
     } catch (error) {
       console.log(error);
       if (error instanceof Error) toast({ status: "error", description: error.message });

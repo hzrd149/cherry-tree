@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@chakra-ui/react";
+import { createUploadAuth } from "blossom-client-sdk";
 
 import { useWallet } from "../providers/wallet-provider";
 import { Chunk } from "../helpers/blob";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import { uploadChunks } from "../helpers/upload";
 import state from "../state";
-import { createUploadAuth } from "../helpers/blossom";
 import { saveChunk } from "../helpers/storage";
 import useErrorRecords from "./use-error-record";
 
@@ -63,7 +63,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
           return await wallet.send(request.amount, { pubkey: request.pubkey });
         },
         onAuth: async (_server, blob) => {
-          return await createUploadAuth(typeof blob === "string" ? blob : blob.hash, signer);
+          return await createUploadAuth(signer, typeof blob === "string" ? blob : blob.hash);
         },
         onError: (server, chunk, error) => {
           setHashError(chunk.hash, server, error);

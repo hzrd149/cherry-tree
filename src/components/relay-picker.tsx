@@ -1,12 +1,13 @@
 import { useState, FormEventHandler, useEffect } from "react";
 import { Button, CloseButton, Flex, Input, Link } from "@chakra-ui/react";
+import { useStoreQuery } from "applesauce-react/hooks";
+import { TimelineQuery } from "applesauce-core/queries";
+import { getTagValue } from "applesauce-core/helpers";
 import { Filter } from "nostr-tools";
 
 import Favicon from "./media-server-favicon";
 import { relayPool } from "../pool";
-import { getTagValue } from "../helpers/nostr";
-import state, { addRelayEvent } from "../state";
-import { useObservable } from "../hooks/use-observable";
+import { eventStore } from "../state";
 
 const onlineFilter: Filter = {
   kinds: [30166],
@@ -14,16 +15,19 @@ const onlineFilter: Filter = {
   since: Math.round(Date.now() / 1000) - 60 * 60_000,
 };
 
+let loaded = false;
+
 function AddRelayForm({ onSubmit }: { onSubmit: (relay: string) => void }) {
   const [relay, setRelay] = useState("");
-  const online = useObservable(state.onlineRelays);
+  const online = useStoreQuery(TimelineQuery, [onlineFilter]);
 
   // fetch online relays
   useEffect(() => {
-    if (state.onlineRelays.value.length > 0) return;
+    if (loaded) return;
+    loaded = true;
 
     const sub = relayPool.subscribeMany(["wss://relay.nostr.watch/"], [onlineFilter], {
-      onevent: (event) => addRelayEvent(event),
+      onevent: (event) => eventStore.add(event),
     });
 
     return () => sub.close();

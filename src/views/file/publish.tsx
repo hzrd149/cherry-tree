@@ -1,8 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Button,
   Checkbox,
-  Code,
   Flex,
   FormControl,
   FormLabel,
@@ -15,7 +14,8 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
-import { bytesToHex } from "@noble/hashes/utils";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { useObservable } from "applesauce-react/hooks";
 import { neventEncode } from "nostr-tools/nip19";
 
 import state, { ChunkedFile, removeFile } from "../../state";
@@ -23,14 +23,11 @@ import FileCard from "../../components/file-card";
 import { relayPool } from "../../pool";
 import RelayPicker from "../../components/relay-picker";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
-import { encodeTree } from "../../helpers/merkle";
-import { bytesToBase64 } from "../../helpers/base64";
-import MerkleTreeButton from "../../components/merkle-tree-button";
 import ServerPicker from "../../components/server-picker";
-import { useObservable } from "../../hooks/use-observable";
+import { getRootHash } from "../../helpers/blob";
 
 function PublishPage({ file }: { file: ChunkedFile }) {
-  if (!file.tree || !file.chunks) return null;
+  if (!file.chunks) return null;
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -43,6 +40,12 @@ function PublishPage({ file }: { file: ChunkedFile }) {
   const [relays, setRelays] = useState(state.relays.value);
   const addServers = useDisclosure({ defaultIsOpen: true });
 
+  const rootHash = useMemo(() => {
+    if (!file.chunks) throw new Error("Missing chunks");
+    const hashes = file.chunks.map((c) => hexToBytes(c.hash));
+    return bytesToHex(getRootHash(hashes));
+  }, [file.chunks]);
+
   const signer = useCallback(
     async (draft: EventTemplate) => {
       if (anon.isOpen) return finalizeEvent(draft, generateSecretKey());
@@ -54,27 +57,29 @@ function PublishPage({ file }: { file: ChunkedFile }) {
 
   const [loading, setLoading] = useState(false);
   const publish = async () => {
-    if (!file.tree || !file.chunks) return null;
+    if (!file.chunks) return null;
     try {
       setLoading(true);
 
       const draft: EventTemplate = {
         kind: 2001,
-        content: bytesToBase64(encodeTree(file.tree)),
+        content: file.chunks.map((c) => c.hash).join("\n"),
         created_at: Math.round(Date.now() / 1000),
-        tags: [["alt", "Chunked file"]],
+        tags: [["alt", "Chunked blob"]],
       };
 
-      // add merkel root
-      draft.tags.push(["x", bytesToHex(file.tree.hash), "merkle"]);
+      // add root hash
+      draft.tags.push(["x", rootHash]);
 
       // add metadata
       if (metadata.isOpen) {
         if (name) draft.tags.push(["name", name]);
         if (summary) draft.tags.push(["summary", summary]);
-        if (type) draft.tags.push(["m", type]);
-        draft.tags.push(["size", String(file.file.size)]);
+        if (type) draft.tags.push(["mine", type]);
       }
+
+      // add size
+      draft.tags.push(["size", String(file.file.size)]);
 
       // add recommended blossom servers
       if (addServers.isOpen) {
@@ -84,7 +89,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
       }
 
       const signed = await signer(draft);
-      await relayPool.publish(relays, signed);
+      await Promise.allSettled(relayPool.publish(relays, signed));
 
       navigate(`/archive/${neventEncode({ id: signed.id, author: signed.pubkey, relays: relays.slice(0, 4) })}`);
       removeFile(file.id);
@@ -99,15 +104,6 @@ function PublishPage({ file }: { file: ChunkedFile }) {
     <>
       <Flex gap="2" direction="column">
         <FileCard file={file.file} />
-        <Flex gap="2" justifyContent="space-between">
-          <Heading size="sm">Merkle Tree</Heading>
-          <MerkleTreeButton variant="link" tree={file.tree}>
-            details
-          </MerkleTreeButton>
-        </Flex>
-        <Code fontFamily="monospace" userSelect="all">
-          {bytesToHex(file.tree.hash)}
-        </Code>
 
         <Flex gap="2" justifyContent="space-between" alignItems="flex-end">
           <Heading size="md">Metadata</Heading>

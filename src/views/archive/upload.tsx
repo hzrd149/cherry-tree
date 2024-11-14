@@ -1,30 +1,25 @@
-import { Box, Code, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
+import { Box, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
+import { useObservable, useStoreQuery } from "applesauce-react/hooks";
+import { SingleEventQuery } from "applesauce-core/queries";
 import { useParams } from "react-router-dom";
 import { bytesToHex } from "@noble/hashes/utils";
 
 import { relayPool } from "../../pool";
-import state, { addArchiveEvent } from "../../state";
-import { decodeTree, getLeafNodes } from "../../helpers/merkle";
-import { base64ToBytes } from "../../helpers/base64";
-import MerkleTreeButton from "../../components/merkle-tree-button";
+import state, { eventStore } from "../../state";
 import ServerPicker from "../../components/server-picker";
-import { getTagValue } from "../../helpers/nostr";
-import { useObservable } from "../../hooks/use-observable";
 import { CopyButton } from "../../components/copy-button";
 import useUploader from "../../hooks/use-uploader";
 import { readChunk } from "../../helpers/storage";
 import { Chunk } from "../../helpers/blob";
 import RainbowButton from "../../components/rainbow-button";
+import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../helpers/archive";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const title = getTagValue(archive, "name") || getTagValue(archive, "title");
-  const summary = getTagValue(archive, "summary");
-  const root = getTagValue(archive, "x");
-
-  const tree = useMemo(() => decodeTree(base64ToBytes(archive.content)), [archive]);
-  const hashes = useMemo(() => getLeafNodes(tree).map((c) => bytesToHex(c.hash)), [tree]);
+  const name = getArchiveName(archive);
+  const summary = getArchiveSummary(archive);
+  const hashes = useMemo(() => getArchiveChunkHashes(archive).map(bytesToHex), [archive]);
 
   const [servers, setServers] = useState<string[]>(state.servers.value);
   const anon = useDisclosure({ defaultIsOpen: true });
@@ -56,18 +51,9 @@ function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: s
     <Flex gap="2" direction="column">
       <Box>
         <CopyButton float="right" size="sm" value={nevent} aria-label="Copy link" variant="ghost" />
-        <Heading size="md">{title || archive.id.slice(0, 8)}</Heading>
+        <Heading size="md">{name || archive.id.slice(0, 8)}</Heading>
       </Box>
       {summary && <Text whiteSpace="pre-line">{summary}</Text>}
-      <Flex gap="2" justifyContent="space-between">
-        <Heading size="sm">Merkle Tree</Heading>
-        <MerkleTreeButton variant="link" tree={tree}>
-          details
-        </MerkleTreeButton>
-      </Flex>
-      <Code fontFamily="monospace" userSelect="all">
-        {root}
-      </Code>
 
       <Flex gap="2" justifyContent="space-between" alignItems="flex-end" mt="2">
         <Heading size="md">Servers</Heading>
@@ -113,15 +99,16 @@ export default function ArchiveUploadView() {
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
   const relays = useObservable(state.relays);
-  const events = useObservable(state.archives);
-  const event = events.find((e) => e.id === decoded.data.id);
+  const event = useStoreQuery(SingleEventQuery, [decoded.data.id]);
 
   // load event
   useEffect(() => {
+    if (event) return;
+
     relayPool
       .get([...relays, ...(decoded.data.relays ?? [])], { ids: [decoded.data.id] })
-      .then((event) => event && addArchiveEvent(event));
-  }, [decoded]);
+      .then((event) => event && eventStore.add(event));
+  }, [decoded, event]);
 
   if (!event) return <Spinner />;
   return <ArchiveUploadPage archive={event} nevent={nevent} />;

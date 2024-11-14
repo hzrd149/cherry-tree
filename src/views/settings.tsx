@@ -13,13 +13,13 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
+import { useObservable } from "applesauce-react/hooks";
 
 import ServerPicker from "../components/server-picker";
 import state from "../state";
 import RelayPicker from "../components/relay-picker";
 import { formatFileSize } from "../helpers/number";
 import { clearChunks } from "../helpers/storage";
-import { useObservable } from "../hooks/use-observable";
 
 export default function SettingsView() {
   const toast = useToast();

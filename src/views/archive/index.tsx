@@ -2,28 +2,33 @@ import { Box, Button, Code, Flex, Heading, Spinner, Switch, Text, Tooltip, useDi
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useObservable, useStoreQuery } from "applesauce-react/hooks";
+import { SingleEventQuery } from "applesauce-core/queries";
+import { getTagValue } from "applesauce-core/helpers";
 import { bytesToHex } from "@noble/hashes/utils";
 
 import { relayPool } from "../../pool";
-import state, { addArchiveEvent } from "../../state";
-import { decodeTree, getLeafNodes } from "../../helpers/merkle";
-import { base64ToBytes } from "../../helpers/base64";
-import MerkleTreeButton from "../../components/merkle-tree-button";
+import state, { eventStore } from "../../state";
 import ServerPicker from "../../components/server-picker";
-import { getTagValue } from "../../helpers/nostr";
-import { useObservable } from "../../hooks/use-observable";
 import { CopyButton } from "../../components/copy-button";
 import useDownloader from "../../hooks/use-downloader";
+import {
+  getArchiveChunkHashes,
+  getArchiveMimeType,
+  getArchiveName,
+  getArchiveSummary,
+  isValidArchive,
+} from "../../helpers/archive";
 
 function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const title = getTagValue(archive, "name") || getTagValue(archive, "title");
-  const type = getTagValue(archive, "m");
-  const summary = getTagValue(archive, "summary");
+  const name = getArchiveName(archive);
+  const type = getArchiveMimeType(archive);
+  const summary = getArchiveSummary(archive);
   const root = getTagValue(archive, "x");
+  const hashes = useMemo(() => getArchiveChunkHashes(archive).map(bytesToHex), [archive]);
+
   const persist = useDisclosure({ defaultIsOpen: "storage" in navigator });
 
-  const tree = useMemo(() => decodeTree(base64ToBytes(archive.content)), [archive]);
-  const hashes = useMemo(() => getLeafNodes(tree).map((c) => bytesToHex(c.hash)), [tree]);
   const [servers, setServers] = useState<string[]>(() =>
     Array.from(
       new Set([...state.servers.value, ...archive.tags.filter((t) => t[0] === "server" && t[1]).map((t) => t[1])]),
@@ -31,7 +36,7 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
   );
 
   const { download, downloaded, verified, loading, errors } = useDownloader(servers, hashes, {
-    name: title,
+    name: name,
     type,
     persist: persist.isOpen,
   });
@@ -42,18 +47,9 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
     <Flex gap="2" direction="column">
       <Box>
         <CopyButton float="right" size="sm" value={nevent} aria-label="Copy link" variant="ghost" />
-        <Heading size="md">{title || archive.id.slice(0, 8)}</Heading>
+        <Heading size="md">{name || archive.id.slice(0, 8)}</Heading>
       </Box>
       {summary && <Text whiteSpace="pre-line">{summary}</Text>}
-      <Flex gap="2" justifyContent="space-between">
-        <Heading size="sm">Merkle Tree</Heading>
-        <MerkleTreeButton variant="link" tree={tree}>
-          details
-        </MerkleTreeButton>
-      </Flex>
-      <Code fontFamily="monospace" userSelect="all">
-        {root}
-      </Code>
 
       <Flex gap="2" justifyContent="space-between" alignItems="flex-end" mt="2">
         <Heading size="md">Servers</Heading>
@@ -95,6 +91,10 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
           </Tooltip>
         ))}
       </Flex>
+      <Heading size="sm">Root hash</Heading>
+      <Code fontFamily="monospace" userSelect="all">
+        {root}
+      </Code>
 
       <Button
         colorScheme="green"
@@ -117,16 +117,18 @@ export default function ArchiveDownloadView() {
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
   const relays = useObservable(state.relays);
-  const events = useObservable(state.archives);
-  const event = events.find((e) => e.id === decoded.data.id);
+  const archive = useStoreQuery(SingleEventQuery, [decoded.data.id]);
+  if (archive && !isValidArchive(archive)) throw new Error("Invalid archive event");
 
   // load event
   useEffect(() => {
+    if (archive) return;
+
     relayPool
       .get([...relays, ...(decoded.data.relays ?? [])], { ids: [decoded.data.id] })
-      .then((event) => event && addArchiveEvent(event));
-  }, [decoded]);
+      .then((event) => event && eventStore.add(event));
+  }, [decoded, archive]);
 
-  if (!event) return <Spinner />;
-  return <ArchiveDownloadPage archive={event} nevent={nevent} />;
+  if (!archive) return <Spinner />;
+  return <ArchiveDownloadPage archive={archive} nevent={nevent} />;
 }

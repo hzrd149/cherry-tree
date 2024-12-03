@@ -1,5 +1,5 @@
 import { useState, FormEventHandler } from "react";
-import { Button, CloseButton, Flex, Input, Link } from "@chakra-ui/react";
+import { Button, CloseButton, Flex, Input, Link, Text } from "@chakra-ui/react";
 import { useStoreQuery } from "applesauce-react/hooks";
 import { TimelineQuery } from "applesauce-core/queries";
 import { getTagValue, unixNow } from "applesauce-core/helpers";
@@ -85,6 +85,13 @@ export default function RelayPicker({ relays, onChange }: { relays: string[]; on
         ))}
       </Flex>
       <AddRelayForm onSubmit={(relay) => onChange([...relays, relay])} />
+
+      <Text color="GrayText" fontSize="sm">
+        Find more relays at{" "}
+        <Link href="https://nostr.watch" isExternal color="blue.500">
+          nostr.watch
+        </Link>
+      </Text>
     </>
   );
 }

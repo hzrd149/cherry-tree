@@ -1,5 +1,5 @@
 import { useState, FormEventHandler, useEffect } from "react";
-import { Button, CloseButton, Flex, Icon, Input, Link, Text, Tooltip } from "@chakra-ui/react";
+import { Button, CloseButton, Flex, FormHelperText, Icon, Input, Link, Text, Tooltip } from "@chakra-ui/react";
 import Favicon from "./media-server-favicon";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { getPaymentRequestFromHeaders, PaymentRequest } from "blossom-client-sdk";
@@ -131,6 +131,13 @@ export default function ServerPicker({
         </Flex>
       )}
       <AddServerForm onSubmit={(server) => onChange([...servers, server])} />
+
+      <Text color="GrayText" fontSize="sm">
+        Find more servers at{" "}
+        <Link href="https://blossomservers.com" isExternal color="blue.500">
+          blossomservers.com
+        </Link>
+      </Text>
     </>
   );
 }

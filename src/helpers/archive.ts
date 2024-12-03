@@ -3,7 +3,15 @@ import { getTagValue } from "applesauce-core/helpers";
 import { NostrEvent } from "nostr-tools";
 
 export function getArchiveChunkHashes(archive: NostrEvent) {
-  return archive.content.trim().split("\n").map(hexToBytes);
+  const chunks = archive.tags.filter((t) => t[0] === "chunk").map((t) => t[1]);
+
+  return chunks.length > 0
+    ? chunks.map(hexToBytes)
+    : archive.content
+        .trim()
+        .split("\n")
+        .filter((h) => h.length === 64)
+        .map(hexToBytes);
 }
 
 export function getArchiveName(archive: NostrEvent) {
@@ -11,7 +19,7 @@ export function getArchiveName(archive: NostrEvent) {
 }
 
 export function getArchiveSummary(archive: NostrEvent) {
-  return getTagValue(archive, "summary");
+  return archive.content;
 }
 
 export function getArchiveMimeType(archive: NostrEvent) {
@@ -29,8 +37,7 @@ export function getArchiveServers(archive: NostrEvent) {
 
 export function isValidArchive(archive: NostrEvent) {
   try {
-    getArchiveChunkHashes(archive);
-    return true;
+    return getArchiveChunkHashes(archive).length > 0;
   } catch (error) {}
   return false;
 }

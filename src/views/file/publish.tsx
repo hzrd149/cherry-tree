@@ -64,9 +64,9 @@ function PublishPage({ file }: { file: ChunkedFile }) {
 
       const draft: EventTemplate = {
         kind: 2001,
-        content: file.chunks.map((c) => c.hash).join("\n"),
+        content: summary,
         created_at: Math.round(Date.now() / 1000),
-        tags: [["alt", "Chunked blob"]],
+        tags: [["alt", "Chunked blob"], ...file.chunks.map((c) => ["chunk", c.hash])],
       };
 
       // add root hash
@@ -75,7 +75,6 @@ function PublishPage({ file }: { file: ChunkedFile }) {
       // add metadata
       if (metadata.isOpen) {
         if (name) draft.tags.push(["name", name]);
-        if (summary) draft.tags.push(["summary", summary]);
         if (type) draft.tags.push(["mime", type]);
       }
 

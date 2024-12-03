@@ -56,7 +56,7 @@ export default function HomeView() {
           <ErrorBoundary key={archive.id}>
             <FileCard
               to={`/archive/${nevent}`}
-              name={getArchiveName(archive)}
+              name={getArchiveName(archive) || "Unknown"}
               type={getArchiveMimeType(archive)}
               size={getArchiveSize(archive)}
               copy={nevent}

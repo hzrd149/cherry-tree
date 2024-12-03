@@ -1,7 +1,6 @@
 import { BehaviorSubject } from "rxjs";
-import { EventStore, QueryStore } from "applesauce-core";
-
 import { nanoid } from "nanoid";
+
 import { Chunk } from "./helpers/blob";
 
 export type ChunkedFile = {
@@ -9,9 +8,6 @@ export type ChunkedFile = {
   file: File;
   chunks?: Chunk[];
 };
-
-export const eventStore = new EventStore();
-export const queryStore = new QueryStore(eventStore);
 
 const files = new BehaviorSubject<ChunkedFile[]>([]);
 const servers = new BehaviorSubject<string[]>(JSON.parse(localStorage.getItem("servers") ?? "[]"));

@@ -9,40 +9,45 @@
     "preview": "vite preview",
     "format": "prettier -w ."
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
-    "@cashu/cashu-ts": "2.0.0-rc1",
+    "@cashu/cashu-ts": "^2.0.0",
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "~2.10.4",
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
-    "@noble/hashes": "^1.5.0",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@noble/hashes": "^1.6.1",
     "applesauce-core": "next",
     "applesauce-react": "next",
-    "blossom-client-sdk": "next",
-    "chart.js": "^4.4.6",
-    "framer-motion": "^11.11.15",
-    "nanoid": "^5.0.8",
-    "nostr-tools": "~2.7.2",
+    "blossom-client-sdk": "^2",
+    "chart.js": "^4.4.7",
+    "framer-motion": "^11.13.1",
+    "hash-sum": "^2.0.0",
+    "nanoid": "^5.0.9",
+    "nostr-tools": "~2.10.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "^4.1.2",
-    "react-icons": "^5.3.0",
+    "react-icons": "^5.4.0",
     "react-router-dom": "^6.28.0",
+    "rx-nostr": "^3.4.1",
+    "rx-nostr-crypto": "^3.1.2",
     "rxjs": "^7.8.1",
+    "window.nostr.js": "^0.4.6",
     "workbox-window": "^7.3.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.9",
+    "@changesets/cli": "^2.27.10",
+    "@types/hash-sum": "^1.0.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react-swc": "^3.7.1",
-    "prettier": "^3.3.3",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "prettier": "^3.4.1",
     "typescript": "~5.6.3",
     "vite": "^5.4.11",
     "vite-plugin-pwa": "^0.20.5"
   },
-  "files": [
-    "dist"
-  ],
-  "packageManager": "pnpm@9.12.2"
+  "packageManager": "pnpm@9.14.4"
 }

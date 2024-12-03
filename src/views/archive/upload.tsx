@@ -6,8 +6,7 @@ import { SingleEventQuery } from "applesauce-core/queries";
 import { useParams } from "react-router-dom";
 import { bytesToHex } from "@noble/hashes/utils";
 
-import { relayPool } from "../../pool";
-import state, { eventStore } from "../../state";
+import state from "../../state";
 import ServerPicker from "../../components/server-picker";
 import { CopyButton } from "../../components/copy-button";
 import useUploader from "../../hooks/use-uploader";
@@ -15,6 +14,7 @@ import { readChunk } from "../../helpers/storage";
 import { Chunk } from "../../helpers/blob";
 import RainbowButton from "../../components/rainbow-button";
 import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../helpers/archive";
+import useSubscription from "../../hooks/use-subscription";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
   const name = getArchiveName(archive);
@@ -101,14 +101,11 @@ export default function ArchiveUploadView() {
   const relays = useObservable(state.relays);
   const event = useStoreQuery(SingleEventQuery, [decoded.data.id]);
 
-  // load event
-  useEffect(() => {
-    if (event) return;
-
-    relayPool
-      .get([...relays, ...(decoded.data.relays ?? [])], { ids: [decoded.data.id] })
-      .then((event) => event && eventStore.add(event));
-  }, [decoded, event]);
+  useSubscription(
+    `load-${decoded.data.id}`,
+    { ids: [decoded.data.id] },
+    { on: { relays: decoded.data.relays ? [...decoded.data.relays, ...relays] : relays } },
+  );
 
   if (!event) return <Spinner />;
   return <ArchiveUploadPage archive={event} nevent={nevent} />;

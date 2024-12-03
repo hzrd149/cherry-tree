@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cherry Tree</title>
+
+    <script>
+      window.wnjParams = {
+        position: "bottom",
+        // The only accepted value is 'bottom', default is top
+        accent: "purple",
+        // Supported values: cyan (default), green, purple, red, orange, neutral, stone
+        startHidden: false,
+        // If the host page has a button that call `getPublicKey` to start a
+        // login procedure, the minimized widget can be hidden until connected
+        compactMode: true,
+        // Show the minimized widget in a compact form
+        disableOverflowFix: true,
+        // If the host page on mobile has an horizontal scrolling, the floating
+        // element/modal are pushed to the extreme right/bottom and exit the
+        // viewport. A style is injected in the html/body elements fix this.
+        // This option permit to disable this default behavior
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

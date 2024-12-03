@@ -1,37 +1,24 @@
-import { useState, FormEventHandler, useEffect } from "react";
+import { useState, FormEventHandler } from "react";
 import { Button, CloseButton, Flex, Input, Link } from "@chakra-ui/react";
 import { useStoreQuery } from "applesauce-react/hooks";
 import { TimelineQuery } from "applesauce-core/queries";
-import { getTagValue } from "applesauce-core/helpers";
+import { getTagValue, unixNow } from "applesauce-core/helpers";
 import { Filter } from "nostr-tools";
 
 import Favicon from "./media-server-favicon";
-import { relayPool } from "../pool";
-import { eventStore } from "../state";
+import useSubscription from "../hooks/use-subscription";
 
 const onlineFilter: Filter = {
   kinds: [30166],
   "#n": ["clearnet"],
-  since: Math.round(Date.now() / 1000) - 60 * 60_000,
+  since: unixNow() - 60 * 60_000,
 };
-
-let loaded = false;
 
 function AddRelayForm({ onSubmit }: { onSubmit: (relay: string) => void }) {
   const [relay, setRelay] = useState("");
-  const online = useStoreQuery(TimelineQuery, [onlineFilter]);
 
   // fetch online relays
-  useEffect(() => {
-    if (loaded) return;
-    loaded = true;
-
-    const sub = relayPool.subscribeMany(["wss://relay.nostr.watch/"], [onlineFilter], {
-      onevent: (event) => eventStore.add(event),
-    });
-
-    return () => sub.close();
-  }, []);
+  useSubscription("relay-autocomplete", onlineFilter, { on: { relays: ["wss://relay.nostr.watch/"] } });
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -39,6 +26,7 @@ function AddRelayForm({ onSubmit }: { onSubmit: (relay: string) => void }) {
     setRelay("");
   };
 
+  const online = useStoreQuery(TimelineQuery, [onlineFilter]);
   const relaySuggestions =
     new Set(online?.map((event) => getTagValue(event, "d")).filter((url) => !!url) as string[]) ?? [];
 

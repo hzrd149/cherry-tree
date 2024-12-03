@@ -3,15 +3,29 @@ import { Button, CloseButton, Flex, Icon, Input, Link, Text, Tooltip } from "@ch
 import Favicon from "./media-server-favicon";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { getPaymentRequestFromHeaders, PaymentRequest } from "blossom-client-sdk";
+import { useStoreQuery } from "applesauce-react/hooks";
+import { TimelineQuery } from "applesauce-core/queries";
+import { getTagValue } from "applesauce-core/helpers";
+
+import { SERVER_ADVERTIZEMENT_KIND } from "../const";
+import useSubscription from "../hooks/use-subscription";
 
 function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
   const [server, setServer] = useState("");
+
+  useSubscription("servers", {
+    kinds: [SERVER_ADVERTIZEMENT_KIND],
+  });
 
   const handleSubmit: FormEventHandler = (e) => {
     e.preventDefault();
     if (server.trim()) onSubmit(server);
     setServer("");
   };
+
+  const servers = useStoreQuery(TimelineQuery, [{ kinds: [SERVER_ADVERTIZEMENT_KIND] }]);
+  const serversSuggestions =
+    new Set(servers?.map((event) => getTagValue(event, "d")).filter((url) => !!url) as string[]) ?? [];
 
   return (
     <Flex as="form" onSubmit={handleSubmit} gap="2">
@@ -22,7 +36,16 @@ function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
         required
         placeholder="https://nostr.download"
         name="server"
+        list="server-suggestions"
       />
+
+      <datalist id="server-suggestions">
+        {Array.from(serversSuggestions).map((url) => (
+          <option key={url} value={url}>
+            {url}
+          </option>
+        ))}
+      </datalist>
       <Button type="submit" colorScheme="pink">
         Add
       </Button>

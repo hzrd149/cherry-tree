@@ -8,6 +8,11 @@ export default defineConfig({
   build: {
     sourcemap: true,
   },
+  esbuild: {
+    supported: {
+      "top-level-await": true,
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -17,7 +22,7 @@ export default defineConfig({
         name: "Cherry Tree",
         short_name: "Cherry Tree",
         description: "Chunked blobs",
-        theme_color: "#ffffff",
+        theme_color: "#ffbcd8",
         icons: [
           {
             src: "pwa-192x192.png",

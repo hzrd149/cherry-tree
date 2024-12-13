@@ -2,8 +2,10 @@ import { createRxNostr } from "rx-nostr";
 import { verifier } from "rx-nostr-crypto";
 import { nip07Signer } from "rx-nostr";
 import { EventStore, QueryStore } from "applesauce-core";
+import { isFromCache } from "applesauce-core/helpers";
 
 import state from "./state";
+import cache from "./cache";
 
 export const eventStore = new EventStore();
 export const queryStore = new QueryStore(eventStore);
@@ -15,7 +17,10 @@ export const rxNostr = createRxNostr({
 
 // send all events to eventStore
 rxNostr.createAllEventObservable().subscribe((message) => {
-  eventStore.add(message.event, message.from);
+  const event = eventStore.add(message.event, message.from);
+
+  // save the event to cache
+  if (!isFromCache(event)) cache.publish(event);
 });
 
 // update default relays

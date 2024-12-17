@@ -17,7 +17,7 @@ const wallet = new LocalWallet();
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider>
-      <QueryStoreProvider store={queryStore}>
+      <QueryStoreProvider queryStore={queryStore}>
         <WalletProvider wallet={wallet}>
           <ErrorBoundary>
             <App />

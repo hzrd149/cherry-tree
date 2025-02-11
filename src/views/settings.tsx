@@ -16,7 +16,7 @@ import {
 import { useObservable } from "applesauce-react/hooks";
 
 import ServerPicker from "../components/server-picker";
-import state from "../state";
+import state from "../services/state";
 import RelayPicker from "../components/relay-picker";
 import { formatFileSize } from "../helpers/number";
 import { clearChunks } from "../helpers/storage";

@@ -1,7 +1,9 @@
-import { markFromCache } from "applesauce-core/helpers";
+import { isFromCache, markFromCache } from "applesauce-core/helpers";
 import { CacheRelay, openDB } from "nostr-idb";
 import { Filter, NostrEvent } from "nostr-tools";
 import { Observable } from "rxjs";
+import rxNostr from "./rx-nostr";
+import { eventStore } from "./stores";
 
 const db = await openDB();
 const cache = new CacheRelay(db);
@@ -26,9 +28,17 @@ export function cacheRequest(filters: Filter[]): Observable<NostrEvent> {
   });
 }
 
-if (import.meta.env.DEV) {
-  // @ts-ignore
-  window.localRelay = cache;
-}
+// save all events to cache
+rxNostr.createAllEventObservable().subscribe((packet) => {
+  if (!isFromCache(packet.event)) cache.publish(packet.event);
+});
+
+// save all outgoing messages to local cache and event store
+rxNostr.createOutgoingMessageObservable().subscribe((packet) => {
+  if (packet.message[0] === "EVENT") {
+    cache.publish(packet.message[1]);
+    eventStore.add(packet.message[1]);
+  }
+});
 
 export default cache;

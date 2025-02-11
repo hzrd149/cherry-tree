@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Button, Flex, FormControl, FormLabel, HStack, Radio, RadioGroup, useToast } from "@chakra-ui/react";
 
-import { ChunkedFile, updateFile } from "../../state";
+import { ChunkedFile, updateFile } from "../../services/state";
 import FileCard from "../../components/file-card";
 import { Chunk, chunkFile } from "../../helpers/blob";
 

@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { Text } from "@chakra-ui/react";
 import { useObservable } from "applesauce-react/hooks";
 
-import state, { ChunkedFile } from "../../state";
+import state, { ChunkedFile } from "../../services/state";
 import UnchunkedFilePage from "./unchunked";
 import UploadFilePage from "./upload";
 

@@ -5,19 +5,20 @@ import { useObservable, useStoreQuery } from "applesauce-react/hooks";
 import { TimelineQuery } from "applesauce-core/queries";
 
 import FileUpload from "../components/file-picker";
-import state, { addFiles, removeFile } from "../state";
+import state, { addFiles, removeFile } from "../services/state";
 import FileCard from "../components/file-card";
 
 import { ErrorBoundary } from "../components/error-boundary";
 import { getArchiveMimeType, getArchiveName, getArchiveSize, isValidArchive } from "../helpers/archive";
-import useSubscription from "../hooks/use-subscription";
+import useTimeline from "../hooks/use-timeline";
+import { defaultRelays } from "../services/settings";
 
 export default function HomeView() {
   const files = useObservable(state.files);
   const navigate = useNavigate();
 
-  const relays = useObservable(state.relays);
-  useSubscription("home-archives", { kinds: [2001] });
+  const relays = useObservable(defaultRelays);
+  useTimeline(relays, { kinds: [2001] });
 
   const archives = useStoreQuery(TimelineQuery, [{ kinds: [2001] }])?.filter(isValidArchive);
 

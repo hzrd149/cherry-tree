@@ -6,7 +6,7 @@ import { Chunk, concatBlobs } from "../helpers/blob";
 import { listChunks, readChunk, saveChunk } from "../helpers/storage";
 import BlobHasher from "../worker/hasher";
 import { downloadChunks } from "../helpers/download";
-import state from "../state";
+import state from "../services/state";
 
 type DownloaderOptions = {
   persist?: boolean;

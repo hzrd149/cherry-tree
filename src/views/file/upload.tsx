@@ -15,7 +15,7 @@ import {
 import { FiUploadCloud } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
-import state, { ChunkedFile } from "../../state";
+import state, { ChunkedFile } from "../../services/state";
 import FileCard from "../../components/file-card";
 import { formatFileSize } from "../../helpers/number";
 import ServerPicker from "../../components/server-picker";

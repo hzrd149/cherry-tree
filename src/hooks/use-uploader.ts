@@ -6,7 +6,7 @@ import { useWallet } from "../providers/wallet-provider";
 import { Chunk } from "../helpers/blob";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import { uploadChunks } from "../helpers/upload";
-import state from "../state";
+import state from "../services/state";
 import { saveChunk } from "../helpers/storage";
 import useErrorRecords from "./use-error-record";
 

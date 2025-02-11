@@ -14,15 +14,15 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { nip19, NostrEvent } from "nostr-tools";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useObservable, useStoreQuery } from "applesauce-react/hooks";
+import { useStoreQuery } from "applesauce-react/hooks";
 import { SingleEventQuery } from "applesauce-core/queries";
 import { getTagValue } from "applesauce-core/helpers";
 import { bytesToHex } from "@noble/hashes/utils";
 import { BiCode } from "react-icons/bi";
 
-import state from "../../state";
+import state from "../../services/state";
 import ServerPicker from "../../components/server-picker";
 import { CopyButton } from "../../components/copy-button";
 import useDownloader from "../../hooks/use-downloader";
@@ -33,7 +33,7 @@ import {
   getArchiveSummary,
   isValidArchive,
 } from "../../helpers/archive";
-import useSubscription from "../../hooks/use-subscription";
+import { singleEventLoader } from "../../services/loaders";
 
 function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
   const name = getArchiveName(archive);
@@ -141,15 +141,13 @@ export default function ArchiveDownloadView() {
   const decoded = nip19.decode(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
-  const relays = useObservable(state.relays);
   const archive = useStoreQuery(SingleEventQuery, [decoded.data.id]);
   if (archive && !isValidArchive(archive)) throw new Error("Invalid archive event");
 
-  useSubscription(
-    `load-${decoded.data.id}`,
-    { ids: [decoded.data.id] },
-    { on: { relays: decoded.data.relays ? [...decoded.data.relays, ...relays] : relays } },
-  );
+  // load single archive event
+  useEffect(() => {
+    singleEventLoader.next(decoded.data);
+  }, [decoded.data]);
 
   if (!archive) return <Spinner />;
   return <ArchiveDownloadPage archive={archive} nevent={nevent} />;

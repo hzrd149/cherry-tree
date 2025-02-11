@@ -1,5 +1,5 @@
 import { createContext, PropsWithChildren, useContext } from "react";
-import LocalWallet from "../local-wallet";
+import LocalWallet from "../services/local-wallet";
 
 export const WalletContext = createContext<LocalWallet | null>(null);
 

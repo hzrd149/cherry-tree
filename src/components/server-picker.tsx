@@ -1,19 +1,21 @@
 import { useState, FormEventHandler, useEffect } from "react";
 import { Button, CloseButton, Flex, Icon, Input, Link, Text, Tooltip } from "@chakra-ui/react";
-import Favicon from "./media-server-favicon";
+import Favicon from "./server-favicon";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { getPaymentRequestFromHeaders, PaymentRequest } from "blossom-client-sdk";
-import { useStoreQuery } from "applesauce-react/hooks";
+import { useObservable, useStoreQuery } from "applesauce-react/hooks";
 import { TimelineQuery } from "applesauce-core/queries";
 import { getTagValue } from "applesauce-core/helpers";
 
 import { SERVER_ADVERTIZEMENT_KIND } from "../const";
-import useSubscription from "../hooks/use-subscription";
+import useTimeline from "../hooks/use-timeline";
+import { defaultRelays } from "../services/settings";
 
 function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
   const [server, setServer] = useState("");
 
-  useSubscription("servers", {
+  const relays = useObservable(defaultRelays);
+  useTimeline(relays, {
     kinds: [SERVER_ADVERTIZEMENT_KIND],
   });
 

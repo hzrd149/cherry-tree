@@ -1,12 +1,12 @@
 import { Box, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
-import { useObservable, useStoreQuery } from "applesauce-react/hooks";
+import { useStoreQuery } from "applesauce-react/hooks";
 import { SingleEventQuery } from "applesauce-core/queries";
 import { useParams } from "react-router-dom";
 import { bytesToHex } from "@noble/hashes/utils";
 
-import state from "../../state";
+import state from "../../services/state";
 import ServerPicker from "../../components/server-picker";
 import { CopyButton } from "../../components/copy-button";
 import useUploader from "../../hooks/use-uploader";
@@ -14,7 +14,7 @@ import { readChunk } from "../../helpers/storage";
 import { Chunk } from "../../helpers/blob";
 import RainbowButton from "../../components/rainbow-button";
 import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../helpers/archive";
-import useSubscription from "../../hooks/use-subscription";
+import { singleEventLoader } from "../../services/loaders";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
   const name = getArchiveName(archive);
@@ -98,14 +98,12 @@ export default function ArchiveUploadView() {
   const decoded = nip19.decode(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
-  const relays = useObservable(state.relays);
   const event = useStoreQuery(SingleEventQuery, [decoded.data.id]);
 
-  useSubscription(
-    `load-${decoded.data.id}`,
-    { ids: [decoded.data.id] },
-    { on: { relays: decoded.data.relays ? [...decoded.data.relays, ...relays] : relays } },
-  );
+  // load single archive event
+  useEffect(() => {
+    singleEventLoader.next(decoded.data);
+  }, [decoded.data]);
 
   if (!event) return <Spinner />;
   return <ArchiveUploadPage archive={event} nevent={nevent} />;

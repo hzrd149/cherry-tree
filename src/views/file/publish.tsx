@@ -19,13 +19,13 @@ import { useObservable } from "applesauce-react/hooks";
 import { neventEncode } from "nostr-tools/nip19";
 import { lastValueFrom } from "rxjs";
 
-import state, { ChunkedFile, removeFile } from "../../state";
+import state, { ChunkedFile, removeFile } from "../../services/state";
 import FileCard from "../../components/file-card";
 import RelayPicker from "../../components/relay-picker";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import ServerPicker from "../../components/server-picker";
 import { getRootHash } from "../../helpers/blob";
-import { rxNostr } from "../../core";
+import rxNostr from "../../services/rx-nostr";
 
 function PublishPage({ file }: { file: ChunkedFile }) {
   if (!file.chunks) return null;

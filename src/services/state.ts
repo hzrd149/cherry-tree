@@ -1,7 +1,8 @@
 import { BehaviorSubject } from "rxjs";
 import { nanoid } from "nanoid";
 
-import { Chunk } from "./helpers/blob";
+import { Chunk } from "../helpers/blob";
+import { defaultRelays, defaultServers } from "./settings";
 
 export type ChunkedFile = {
   id: string;
@@ -10,14 +11,8 @@ export type ChunkedFile = {
 };
 
 const files = new BehaviorSubject<ChunkedFile[]>([]);
-const servers = new BehaviorSubject<string[]>(JSON.parse(localStorage.getItem("servers") ?? "[]"));
-servers.subscribe((servers) => {
-  localStorage.setItem("servers", JSON.stringify(servers));
-});
-const relays = new BehaviorSubject<string[]>(JSON.parse(localStorage.getItem("relays") ?? "[]"));
-relays.subscribe((relays) => {
-  localStorage.setItem("relays", JSON.stringify(relays));
-});
+const servers = defaultServers;
+const relays = defaultRelays;
 
 const downloaders = new BehaviorSubject(parseInt(localStorage.getItem("downloaders") ?? "5"));
 downloaders.subscribe((c) => localStorage.setItem("downloaders", String(c)));

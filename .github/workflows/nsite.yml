@@ -29,8 +29,10 @@ jobs:
       - name: Build
         run: pnpm vite build
 
-      - name: Deploy to Nostr/Blossom
+      - name: Deploy to nsite
         uses: sandwichfarm/nsite-action@v0.2.2
         with:
           nbunksec: ${{ secrets.NSITE_BUNKER }}
           directory: "./dist"
+          force: true
+          purge: true

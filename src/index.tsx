@@ -1,26 +1,26 @@
-import { createRoot } from "react-dom/client";
 import { ChakraProvider } from "@chakra-ui/react";
-import { QueryStoreProvider } from "applesauce-react";
+import { EventStoreProvider } from "applesauce-react/providers";
+import { createRoot } from "react-dom/client";
 import "window.nostr.js";
 
-import "./index.css";
 import App from "./app.tsx";
+import { ErrorBoundary } from "./components/error-boundary";
 import WalletProvider from "./providers/wallet-provider";
 import LocalWallet from "./services/local-wallet.ts";
-import { ErrorBoundary } from "./components/error-boundary";
-import { queryStore } from "./services/stores.ts";
+import { eventStore } from "./services/stores.ts";
+import "./index.css";
 import "./register";
 
 const wallet = new LocalWallet();
 
 createRoot(document.getElementById("root")!).render(
   <ChakraProvider>
-    <QueryStoreProvider queryStore={queryStore}>
+    <EventStoreProvider eventStore={eventStore}>
       <WalletProvider wallet={wallet}>
         <ErrorBoundary>
           <App />
         </ErrorBoundary>
       </WalletProvider>
-    </QueryStoreProvider>
+    </EventStoreProvider>
   </ChakraProvider>,
 );

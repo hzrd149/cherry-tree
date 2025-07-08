@@ -3,8 +3,8 @@ import { Button, CloseButton, Flex, Icon, Input, Link, Text, Tooltip } from "@ch
 import Favicon from "./server-favicon";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { getPaymentRequestFromHeaders, PaymentRequest } from "blossom-client-sdk";
-import { useObservable, useStoreQuery } from "applesauce-react/hooks";
-import { TimelineQuery } from "applesauce-core/queries";
+import { useObservableState, useEventModel } from "applesauce-react/hooks";
+import { TimelineModel } from "applesauce-core/models";
 import { getTagValue } from "applesauce-core/helpers";
 
 import { SERVER_ADVERTIZEMENT_KIND } from "../const";
@@ -14,7 +14,7 @@ import { defaultRelays } from "../services/settings";
 function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
   const [server, setServer] = useState("");
 
-  const relays = useObservable(defaultRelays);
+  const relays = useObservableState(defaultRelays);
   useTimeline(relays, {
     kinds: [SERVER_ADVERTIZEMENT_KIND],
   });
@@ -25,7 +25,7 @@ function AddServerForm({ onSubmit }: { onSubmit: (server: string) => void }) {
     setServer("");
   };
 
-  const servers = useStoreQuery(TimelineQuery, [{ kinds: [SERVER_ADVERTIZEMENT_KIND] }]);
+  const servers = useEventModel(TimelineModel, [{ kinds: [SERVER_ADVERTIZEMENT_KIND] }]);
   const serversSuggestions =
     new Set(servers?.map((event) => getTagValue(event, "d")).filter((url) => !!url) as string[]) ?? [];
 

@@ -1,20 +1,20 @@
 import { Box, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
+import { bytesToHex } from "@noble/hashes/utils";
+import { EventModel } from "applesauce-core/models";
+import { useEventModel, useObservableMemo } from "applesauce-react/hooks";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
-import { useStoreQuery } from "applesauce-react/hooks";
-import { SingleEventQuery } from "applesauce-core/queries";
 import { useParams } from "react-router-dom";
-import { bytesToHex } from "@noble/hashes/utils";
 
-import state from "../../services/state";
-import ServerPicker from "../../components/server-picker";
 import { CopyButton } from "../../components/copy-button";
-import useUploader from "../../hooks/use-uploader";
-import { readChunk } from "../../helpers/storage";
-import { Chunk } from "../../helpers/blob";
 import RainbowButton from "../../components/rainbow-button";
+import ServerPicker from "../../components/server-picker";
 import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../helpers/archive";
+import { Chunk } from "../../helpers/blob";
+import { readChunk } from "../../helpers/storage";
+import useUploader from "../../hooks/use-uploader";
 import { singleEventLoader } from "../../services/loaders";
+import state from "../../services/state";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
   const name = getArchiveName(archive);
@@ -98,12 +98,10 @@ export default function ArchiveUploadView() {
   const decoded = nip19.decode(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
-  const event = useStoreQuery(SingleEventQuery, [decoded.data.id]);
+  const event = useEventModel(EventModel, [decoded.data.id]);
 
   // load single archive event
-  useEffect(() => {
-    singleEventLoader.next(decoded.data);
-  }, [decoded.data]);
+  useObservableMemo(() => singleEventLoader(decoded.data), [decoded.data]);
 
   if (!event) return <Spinner />;
   return <ArchiveUploadPage archive={event} nevent={nevent} />;

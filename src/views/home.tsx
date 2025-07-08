@@ -1,26 +1,25 @@
 import { Button, Flex, Heading } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { TimelineModel } from "applesauce-core/models";
+import { useEventModel, useObservableState } from "applesauce-react/hooks";
 import { neventEncode } from "nostr-tools/nip19";
-import { useObservable, useStoreQuery } from "applesauce-react/hooks";
-import { TimelineQuery } from "applesauce-core/queries";
-
-import FileUpload from "../components/file-picker";
-import state, { addFiles, removeFile } from "../services/state";
-import FileCard from "../components/file-card";
+import { useNavigate } from "react-router-dom";
 
 import { ErrorBoundary } from "../components/error-boundary";
+import FileCard from "../components/file-card";
+import FileUpload from "../components/file-picker";
 import { getArchiveMimeType, getArchiveName, getArchiveSize, isValidArchive } from "../helpers/archive";
 import useTimeline from "../hooks/use-timeline";
 import { defaultRelays } from "../services/settings";
+import state, { addFiles, removeFile } from "../services/state";
 
 export default function HomeView() {
-  const files = useObservable(state.files);
+  const files = useObservableState(state.files);
   const navigate = useNavigate();
 
-  const relays = useObservable(defaultRelays);
+  const relays = useObservableState(defaultRelays);
   useTimeline(relays, { kinds: [2001] });
 
-  const archives = useStoreQuery(TimelineQuery, [{ kinds: [2001] }])?.filter(isValidArchive);
+  const archives = useEventModel(TimelineModel, [{ kinds: [2001] }])?.filter(isValidArchive);
 
   const handleFile = (files: File[]) => {
     const chunked = addFiles(files);

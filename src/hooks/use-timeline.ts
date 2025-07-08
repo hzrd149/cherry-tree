@@ -1,39 +1,28 @@
 import { useEffect, useMemo } from "react";
-import { TimelineLoader } from "applesauce-loaders";
 import { useEventStore } from "applesauce-react/hooks";
 import hash_sum from "hash-sum";
 import { Filter } from "nostr-tools";
+import { createTimelineLoader } from "applesauce-loaders/loaders";
 
-import rxNostr from "../services/rx-nostr";
 import { cacheRequest } from "../services/cache";
+import pool from "../services/pool";
 
 export default function useTimeline(relays?: string[], filters?: Filter | Filter[]) {
   const eventStore = useEventStore();
-  const timeline = useMemo(() => {
+  const loader = useMemo(() => {
     if (!relays || !filters) return;
 
     console.log("Creating timeline", relays, filters);
 
-    return new TimelineLoader(
-      rxNostr,
-      TimelineLoader.simpleFilterMap(relays, Array.isArray(filters) ? filters : [filters]),
-      { cacheRequest },
-    );
+    return createTimelineLoader(pool, relays, filters, { cache: cacheRequest, eventStore });
   }, [hash_sum(filters), relays?.join("|")]);
 
   useEffect(() => {
-    // wait till timeline and event store are created
-    if (!timeline) return;
+    if (!loader) return;
 
-    const sub = timeline.subscribe((packet) => {
-      eventStore.add(packet.event, packet.from);
-    });
+    // Load first chunk
+    loader().subscribe();
+  }, [loader]);
 
-    // load next chunk when hook mounts
-    timeline.next(-Infinity);
-
-    return () => sub.unsubscribe();
-  }, [eventStore, timeline]);
-
-  return timeline;
+  return loader;
 }

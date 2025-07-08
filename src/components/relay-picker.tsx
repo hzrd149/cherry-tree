@@ -1,20 +1,12 @@
-import { useState, FormEventHandler } from "react";
-import {
-  Button,
-  CloseButton,
-  Flex,
-  Input,
-  Link,
-  Text,
-  useToast,
-} from "@chakra-ui/react";
-import { useStoreQuery } from "applesauce-react/hooks";
-import { TimelineQuery } from "applesauce-core/queries";
+import { Button, CloseButton, Flex, Input, Link, Text, useToast } from "@chakra-ui/react";
 import { getTagValue, unixNow } from "applesauce-core/helpers";
+import { TimelineModel } from "applesauce-core/models";
+import { useEventModel } from "applesauce-react/hooks";
 import { Filter } from "nostr-tools";
+import { FormEventHandler, useState } from "react";
 
-import Favicon from "./server-favicon";
 import useTimeline from "../hooks/use-timeline";
+import Favicon from "./server-favicon";
 
 const onlineFilter: Filter = {
   kinds: [30166],
@@ -22,11 +14,7 @@ const onlineFilter: Filter = {
   since: unixNow() - 60 * 60_000,
 };
 
-function AddRelayForm({
-  onSubmit,
-}: {
-  onSubmit: (relay: string) => void | Promise<void>;
-}) {
+function AddRelayForm({ onSubmit }: { onSubmit: (relay: string) => void | Promise<void> }) {
   const toast = useToast();
   const [relay, setRelay] = useState("");
 
@@ -41,19 +29,14 @@ function AddRelayForm({
       if (relay.trim()) await onSubmit(relay);
       setRelay("");
     } catch (error) {
-      if (error instanceof Error)
-        toast({ status: "error", description: error.message });
+      if (error instanceof Error) toast({ status: "error", description: error.message });
     }
     setSubmitting(false);
   };
 
-  const online = useStoreQuery(TimelineQuery, [onlineFilter]);
+  const online = useEventModel(TimelineModel, [onlineFilter]);
   const relaySuggestions =
-    new Set(
-      online
-        ?.map((event) => getTagValue(event, "d"))
-        .filter((url) => !!url) as string[],
-    ) ?? [];
+    new Set(online?.map((event) => getTagValue(event, "d")).filter((url) => !!url) as string[]) ?? [];
 
   return (
     <Flex as="form" onSubmit={handleSubmit} gap="2">
@@ -81,13 +64,7 @@ function AddRelayForm({
   );
 }
 
-function RelayCard({
-  relay,
-  onRemove,
-}: {
-  relay: string;
-  onRemove: (relay: string) => void | Promise<void>;
-}) {
+function RelayCard({ relay, onRemove }: { relay: string; onRemove: (relay: string) => void | Promise<void> }) {
   const httpUrl = new URL(relay);
   httpUrl.protocol = httpUrl.protocol === "wss:" ? "https:" : "http:";
 
@@ -98,21 +75,13 @@ function RelayCard({
       setRemoving(true);
       await onRemove(relay);
     } catch (error) {
-      if (error instanceof Error)
-        toast({ status: "error", description: error.message });
+      if (error instanceof Error) toast({ status: "error", description: error.message });
     }
     setRemoving(true);
   };
 
   return (
-    <Flex
-      gap="2"
-      p="2"
-      alignItems="center"
-      borderWidth="1px"
-      borderRadius="lg"
-      key={relay.toString()}
-    >
+    <Flex gap="2" p="2" alignItems="center" borderWidth="1px" borderRadius="lg" key={relay.toString()}>
       <Favicon host={httpUrl.toString()} size="sm" />
       <Link href={httpUrl.toString()} target="_blank" fontSize="lg">
         {new URL(relay).toString()}

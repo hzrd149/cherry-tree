@@ -13,7 +13,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import { useObservable } from "applesauce-react/hooks";
+import { useObservableState } from "applesauce-react/hooks";
 
 import ServerPicker from "../components/server-picker";
 import state from "../services/state";
@@ -23,10 +23,10 @@ import { clearChunks } from "../helpers/storage";
 
 export default function SettingsView() {
   const toast = useToast();
-  const servers = useObservable(state.servers);
-  const relays = useObservable(state.relays);
-  const downloaders = useObservable(state.downloaders);
-  const uploaders = useObservable(state.uploaders);
+  const servers = useObservableState(state.servers);
+  const relays = useObservableState(state.relays);
+  const downloaders = useObservableState(state.downloaders);
+  const uploaders = useObservableState(state.uploaders);
 
   const [estimate, setEstimate] = useState<StorageEstimate>();
   useEffect(() => {

@@ -1,4 +1,3 @@
-import { useCallback, useMemo, useState } from "react";
 import {
   Button,
   Checkbox,
@@ -13,19 +12,21 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { useNavigate, useParams } from "react-router-dom";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { useObservable } from "applesauce-react/hooks";
+import { useObservableState } from "applesauce-react/hooks";
+import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import { neventEncode } from "nostr-tools/nip19";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { lastValueFrom } from "rxjs";
 
-import state, { ChunkedFile, removeFile } from "../../services/state";
 import FileCard from "../../components/file-card";
 import RelayPicker from "../../components/relay-picker";
-import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import ServerPicker from "../../components/server-picker";
 import { getRootHash } from "../../helpers/blob";
-import rxNostr from "../../services/rx-nostr";
+import pool from "../../services/pool";
+import { defaultRelays } from "../../services/settings";
+import state, { ChunkedFile, removeFile } from "../../services/state";
 
 function PublishPage({ file }: { file: ChunkedFile }) {
   if (!file.chunks) return null;
@@ -89,7 +90,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
       }
 
       const signed = await signer(draft);
-      await lastValueFrom(rxNostr.send(signed));
+      await lastValueFrom(pool.publish(defaultRelays.value, signed));
 
       navigate(`/archive/${neventEncode({ id: signed.id, author: signed.pubkey, relays: relays.slice(0, 4) })}`);
       removeFile(file.id);
@@ -154,7 +155,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
 
 export default function PublishView() {
   const { id } = useParams();
-  const files = useObservable(state.files);
+  const files = useObservableState(state.files);
   const file = files.find((f) => f.id === id);
 
   if (!file) return <Text color="red.500">Cant find file</Text>;

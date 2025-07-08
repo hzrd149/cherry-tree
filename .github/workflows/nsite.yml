@@ -29,5 +29,8 @@ jobs:
       - name: Build
         run: pnpm vite build
 
-      - name: Deploy nsite
-        run: npx -y nsite-cli upload dist --verbose --purge --privatekey ${{ secrets.NSITE_KEY }}
+      - name: Deploy to Nostr/Blossom
+        uses: sandwichfarm/nsite-action@v1
+        with:
+          nbunksec: ${{ secrets.NSITE_BUNKER }}
+          directory: "./dist"

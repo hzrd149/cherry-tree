@@ -13,6 +13,13 @@ export default defineConfig({
       "top-level-await": true,
     },
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      supported: {
+        "top-level-await": true,
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({

@@ -18,7 +18,6 @@ import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import { neventEncode } from "nostr-tools/nip19";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { lastValueFrom } from "rxjs";
 
 import FileCard from "../../components/file-card";
 import RelayPicker from "../../components/relay-picker";
@@ -90,7 +89,7 @@ function PublishPage({ file }: { file: ChunkedFile }) {
       }
 
       const signed = await signer(draft);
-      await lastValueFrom(pool.publish(defaultRelays.value, signed));
+      await pool.publish(defaultRelays.value, signed);
 
       navigate(`/archive/${neventEncode({ id: signed.id, author: signed.pubkey, relays: relays.slice(0, 4) })}`);
       removeFile(file.id);

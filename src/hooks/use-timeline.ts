@@ -5,7 +5,7 @@ import { Filter } from "nostr-tools";
 import { createTimelineLoader } from "applesauce-loaders/loaders";
 
 import { cacheRequest } from "../services/cache";
-import pool from "../services/pool";
+import pool from "../services/nostr";
 
 export default function useTimeline(relays?: string[], filters?: Filter | Filter[]) {
   const eventStore = useEventStore();

@@ -1,6 +1,6 @@
 import { Box, Text, Flex, Icon, useColorModeValue, CloseButton, LinkBox, Link, ButtonGroup } from "@chakra-ui/react";
 import { FiFile, FiImage, FiFileText, FiFilm, FiMusic } from "react-icons/fi";
-import { Link as RouterLink, To } from "react-router-dom";
+import { Link as RouterLink, To } from "react-router";
 
 import { formatFileSize } from "../helpers/number";
 import { CopyButton } from "./copy-button";

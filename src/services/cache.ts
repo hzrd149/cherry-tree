@@ -1,12 +1,10 @@
 import "window.nostrdb.js";
 
-import { persistEventsToCache, Filter, NostrEvent, markFromCache } from "applesauce-core/helpers";
-import { eventStore } from "./stores";
+import { Filter, NostrEvent, persistEventsToCache } from "applesauce-core/helpers";
+import { eventStore } from "./nostr";
 
 export async function cacheRequest(filters: Filter[]): Promise<NostrEvent[]> {
-  const events = await window.nostrdb.filters(filters);
-  for (const event of events) markFromCache(event);
-  return events;
+  return await window.nostrdb.filters(filters);
 }
 
 // save all events to cache

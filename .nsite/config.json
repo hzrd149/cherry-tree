@@ -1,22 +1,9 @@
 {
-  "bunkerPubkey": "2c20b742a62afd3e7550beb06b67225509afb193069200ec8274d7784ba1a2c0",
-  "relays": [
-    "wss://relay.nsite.lol",
-    "wss://relay.damus.io",
-    "wss://nos.lol",
-    "wss://relay.primal.net"
-  ],
-  "servers": [
-    "https://nostr.download",
-    "https://blossom.primal.net",
-    "https://cdn.hzrd149.com"
-  ],
-  "profile": {
-    "name": "cherry-tree",
-    "display_name": "cherry-tree",
-    "about": "Chunked blobs over blossom"
-  },
-  "publishProfile": true,
-  "publishRelayList": true,
-  "publishServerList": true
+  "bunkerPubkey": "266815e0c9210dfa324c6cba3573b14bee49da4209a9456f9484e5106cd408a5",
+  "relays": ["wss://relay.primal.net", "wss://nos.lol", "wss://relay.nsite.lol"],
+  "servers": ["https://cdn.hzrd149.com", "https://nostr.download", "https://24242.io"],
+  "id": "cherry-tree",
+  "title": "Cherry Tree",
+  "description": "Chunked blossom blobs",
+  "fallback": "/index.html"
 }

@@ -13,7 +13,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { FiUploadCloud } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import state, { ChunkedFile } from "../../services/state";
 import FileCard from "../../components/file-card";

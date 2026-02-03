@@ -7,7 +7,7 @@ import App from "./app.tsx";
 import { ErrorBoundary } from "./components/error-boundary";
 import WalletProvider from "./providers/wallet-provider";
 import LocalWallet from "./services/local-wallet.ts";
-import { eventStore } from "./services/stores.ts";
+import { eventStore } from "./services/nostr.ts";
 import "./index.css";
 import "./register";
 

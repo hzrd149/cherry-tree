@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@chakra-ui/react";
 import { createUploadAuth } from "blossom-client-sdk";
+import { useCallback, useEffect, useState } from "react";
 
-import { useWallet } from "../providers/wallet-provider";
-import { Chunk } from "../helpers/blob";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
-import { uploadChunks } from "../helpers/upload";
-import state from "../services/state";
+import { Chunk } from "../helpers/blob";
 import { saveChunk } from "../helpers/storage";
+import { uploadChunks } from "../helpers/upload";
+import { useWallet } from "../providers/wallet-provider";
+import state from "../services/state";
 import useErrorRecords from "./use-error-record";
 
 export default function useUploader(servers: string[], chunks: Chunk[], anon: boolean, persist = true) {
@@ -46,27 +46,28 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
       await uploadChunks(servers, chunks, {
         signal: controller.signal,
         parallel: state.uploaders.value,
-        onStart: (server, chunk) => {
-          setStarted((v) => ({ ...v, [chunk.hash]: [...(v[chunk.hash] ?? []), server] }));
+        onStart: (server, sha256) => {
+          setStarted((v) => ({ ...v, [sha256]: [...(v[sha256] ?? []), server] }));
         },
-        onUpload: (server, chunk) => {
-          setUploaded((v) => ({ ...v, [chunk.hash]: [...(v[chunk.hash] ?? []), server] }));
+        onUpload: (server, sha256, chunk) => {
+          setUploaded((v) => ({ ...v, [sha256]: [...(v[sha256] ?? []), server] }));
           if (folder) saveChunk(folder, chunk);
         },
-        onPayment: async (_server, _blob, request) => {
+        onPayment: async (_server, _blob, _chunk, request) => {
           // optimize the wallet on the first payment
           // if (!optimized) {
           //   optimized = true;
           //   await wallet.optimize(new Array(chunks.length).fill(request.amount));
           // }
 
-          return await wallet.send(request.amount, { pubkey: request.pubkey });
+          if (!request.amount) throw new Error("Missing amount");
+          return await wallet.send(request.amount);
         },
-        onAuth: async (_server, blob) => {
-          return await createUploadAuth(signer, typeof blob === "string" ? blob : blob.hash);
+        onAuth: async (_server, sha256) => {
+          return await createUploadAuth(signer, sha256);
         },
-        onError: (server, chunk, error) => {
-          setHashError(chunk.hash, server, error);
+        onError: (server, sha256, _chunk, error) => {
+          setHashError(sha256, server, error);
         },
       });
     } catch (error) {

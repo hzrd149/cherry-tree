@@ -1,5 +1,5 @@
 import { ButtonGroup, Flex, Heading, Icon, IconButton, useColorMode } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { BiCog } from "react-icons/bi";
 
 import WalletButton from "./wallet-button";

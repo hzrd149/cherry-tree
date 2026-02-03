@@ -1,4 +1,4 @@
-import { multiServerUpload, MultiServerUploadOptions } from "blossom-client-sdk/actions/upload";
+import { multiServerUpload, MultiServerUploadOptions } from "blossom-client-sdk/actions/multi-server";
 import { Chunk } from "./blob";
 
 type UploadOptions = MultiServerUploadOptions<string, Chunk> & {

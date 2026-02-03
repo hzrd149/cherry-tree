@@ -17,13 +17,13 @@ import { useObservableState } from "applesauce-react/hooks";
 import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
 import { neventEncode } from "nostr-tools/nip19";
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 
 import FileCard from "../../components/file-card";
 import RelayPicker from "../../components/relay-picker";
 import ServerPicker from "../../components/server-picker";
 import { getRootHash } from "../../helpers/blob";
-import pool from "../../services/pool";
+import pool from "../../services/nostr";
 import { defaultRelays } from "../../services/settings";
 import state, { ChunkedFile, removeFile } from "../../services/state";
 

@@ -2,7 +2,7 @@ import { Button, Flex, Heading } from "@chakra-ui/react";
 import { TimelineModel } from "applesauce-core/models";
 import { useEventModel, useObservableState } from "applesauce-react/hooks";
 import { neventEncode } from "nostr-tools/nip19";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { ErrorBoundary } from "../components/error-boundary";
 import FileCard from "../components/file-card";

@@ -20,7 +20,7 @@ import { useEventModel, useObservableMemo } from "applesauce-react/hooks";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useMemo, useState } from "react";
 import { BiCode } from "react-icons/bi";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 
 import { CopyButton } from "../../components/copy-button";
 import ServerPicker from "../../components/server-picker";
@@ -32,7 +32,7 @@ import {
   isValidArchive,
 } from "../../helpers/archive";
 import useDownloader from "../../hooks/use-downloader";
-import { singleEventLoader } from "../../services/loaders";
+import { singleEventLoader } from "../../services/nostr";
 import state from "../../services/state";
 
 function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {

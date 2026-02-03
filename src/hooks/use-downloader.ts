@@ -72,7 +72,8 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
           //   await wallet.optimize(new Array(needDownload.length).fill(request.amount));
           // }
 
-          return await wallet.send(request.amount, { pubkey: request.pubkey });
+          if (!request.amount) throw new Error("Missing amount");
+          return await wallet.send(request.amount);
         },
         onBlob: async (blob, index) => {
           blobs[index] = blob;

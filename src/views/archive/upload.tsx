@@ -4,7 +4,7 @@ import { EventModel } from "applesauce-core/models";
 import { useEventModel, useObservableMemo } from "applesauce-react/hooks";
 import { nip19, NostrEvent } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 import { CopyButton } from "../../components/copy-button";
 import RainbowButton from "../../components/rainbow-button";
@@ -13,7 +13,7 @@ import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../
 import { Chunk } from "../../helpers/blob";
 import { readChunk } from "../../helpers/storage";
 import useUploader from "../../hooks/use-uploader";
-import { singleEventLoader } from "../../services/loaders";
+import { singleEventLoader } from "../../services/nostr";
 import state from "../../services/state";
 
 function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {

@@ -1,7 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { EventStoreProvider } from "applesauce-react/providers";
 import { createRoot } from "react-dom/client";
-import "window.nostr.js";
 
 import App from "./app.tsx";
 import { ErrorBoundary } from "./components/error-boundary";

@@ -13,47 +13,33 @@ import {
   Tooltip,
   useDisclosure,
 } from "@chakra-ui/react";
-import { bytesToHex } from "@noble/hashes/utils";
-import { getTagValue } from "applesauce-core/helpers";
-import { EventModel } from "applesauce-core/models";
-import { useEventModel, useObservableMemo } from "applesauce-react/hooks";
-import { nip19, NostrEvent } from "nostr-tools";
+import { castEventStream } from "applesauce-common/observable";
+import { use$ } from "applesauce-react/hooks/use-$";
+import { nip19 } from "nostr-tools";
 import { useMemo, useState } from "react";
 import { BiCode } from "react-icons/bi";
 import { Link, useParams } from "react-router";
 
+import { ChunkedBlob } from "../../casts/chunked-blob";
 import { CopyButton } from "../../components/copy-button";
 import ServerPicker from "../../components/server-picker";
-import {
-  getArchiveChunkHashes,
-  getArchiveMimeType,
-  getArchiveName,
-  getArchiveSummary,
-  isValidArchive,
-} from "../../helpers/archive";
 import useDownloader from "../../hooks/use-downloader";
-import { singleEventLoader } from "../../services/nostr";
+import { eventStore } from "../../services/nostr";
 import state from "../../services/state";
 
-function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const name = getArchiveName(archive);
-  const type = getArchiveMimeType(archive);
-  const summary = getArchiveSummary(archive);
-  const root = getTagValue(archive, "x");
-  const hashes = useMemo(() => getArchiveChunkHashes(archive).map(bytesToHex), [archive]);
+function ArchiveDownloadPage({ archive, nevent }: { archive: ChunkedBlob; nevent: string }) {
+  const hashes = useMemo(() => archive.chunkHashes, [archive.id]);
 
   const raw = useDisclosure();
   const persist = useDisclosure({ defaultIsOpen: "storage" in navigator });
 
   const [servers, setServers] = useState<string[]>(() =>
-    Array.from(
-      new Set([...state.servers.value, ...archive.tags.filter((t) => t[0] === "server" && t[1]).map((t) => t[1])]),
-    ),
+    Array.from(new Set([...state.servers.value, ...archive.servers])),
   );
 
   const { download, downloaded, verified, loading, errors } = useDownloader(servers, hashes, {
-    name: name,
-    type,
+    name: archive.filename,
+    type: archive.mimeType,
     persist: persist.isOpen,
   });
 
@@ -66,9 +52,9 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
           <CopyButton value={nevent} aria-label="Copy link" />
           <IconButton icon={<Icon as={BiCode} boxSize={6} />} aria-label="Show event" onClick={raw.onToggle} />
         </ButtonGroup>
-        <Heading size="md">{name || archive.id.slice(0, 8)}</Heading>
+        <Heading size="md">{archive.filename || archive.id.slice(0, 8)}</Heading>
       </Box>
-      {summary && <Text whiteSpace="pre-line">{summary}</Text>}
+      {archive.summary && <Text whiteSpace="pre-line">{archive.summary}</Text>}
 
       {raw.isOpen && (
         <Code whiteSpace="pre" overflow="auto">
@@ -118,7 +104,7 @@ function ArchiveDownloadPage({ archive, nevent }: { archive: NostrEvent; nevent:
       </Flex>
       <Heading size="sm">Root hash</Heading>
       <Code fontFamily="monospace" userSelect="all">
-        {root}
+        {archive.rootHash}
       </Code>
 
       <Button
@@ -141,11 +127,11 @@ export default function ArchiveDownloadView() {
   const decoded = nip19.decode(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
-  const archive = useEventModel(EventModel, [decoded.data.id]);
-  if (archive && !isValidArchive(archive)) throw new Error("Invalid archive event");
-
-  // load single archive event
-  useObservableMemo(() => singleEventLoader(decoded.data), [decoded.data]);
+  // Load and cast the archive event
+  const archive = use$(
+    () => eventStore.event(decoded.data).pipe(castEventStream(ChunkedBlob, eventStore)),
+    [decoded.data.id],
+  );
 
   if (!archive) return <Spinner />;
   return <ArchiveDownloadPage archive={archive} nevent={nevent} />;

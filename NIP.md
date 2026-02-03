@@ -19,11 +19,11 @@ The `content` field MUST be a human readable description of the chunked file
 ```json
 {
   "tags": [
-    [ "chunk", "7e668b56a58c7891e0cf263ea3f093b75eebade23d663a45aa9920f347b3d671"],
-    [ "chunk", "9b9c44a91396f19fd8700986eb0586dff2dcccf96c75bc2caefef302bcd78da1"],
-    [ "chunk", "7a281548f1223664b855b10b08e59e84389ccabeb742517f6cd75eda2724a798"],
-    [ "chunk", "fadeccee86b123088bbc452df10e8fbc99d4c2f22a70ef7a35605ec8e439c345"],
-    [ "chunk", "5d62398419e6d136771541f3d2215e0ce31b1be45e99dbc64b43a4b734b447ca"],
+    ["chunk", "7e668b56a58c7891e0cf263ea3f093b75eebade23d663a45aa9920f347b3d671"],
+    ["chunk", "9b9c44a91396f19fd8700986eb0586dff2dcccf96c75bc2caefef302bcd78da1"],
+    ["chunk", "7a281548f1223664b855b10b08e59e84389ccabeb742517f6cd75eda2724a798"],
+    ["chunk", "fadeccee86b123088bbc452df10e8fbc99d4c2f22a70ef7a35605ec8e439c345"],
+    ["chunk", "5d62398419e6d136771541f3d2215e0ce31b1be45e99dbc64b43a4b734b447ca"]
   ]
 }
 ```
@@ -33,14 +33,16 @@ The `content` field MUST be a human readable description of the chunked file
 The `2001` event MAY include additional metadata tags to help other clients know the filename, mime type or servers to download from
 
 Metadata tags:
-  - `name` Filename
-  - `mime` Mime type of file
-  - `size` Total size in bytes of the file
-  - `server` (multiple) Recommended servers to download chunks from
+
+- `name` Filename
+- `mime` Mime type of file
+- `size` Total size in bytes of the file
+- `server` (multiple) Recommended servers to download chunks from
 
 ## Examples
 
 Example `2001` event
+
 ```json
 {
   "pubkey": "5328e6c743a50271745e16476590ba7ea3dc591c65f3a5e2b03430814c1dabc0",
@@ -48,16 +50,16 @@ Example `2001` event
   "kind": 2001,
   "content": "Large zip archive of documents",
   "tags": [
-    [ "chunk", "7e668b56a58c7891e0cf263ea3f093b75eebade23d663a45aa9920f347b3d671"],
-    [ "chunk", "9b9c44a91396f19fd8700986eb0586dff2dcccf96c75bc2caefef302bcd78da1"],
-    [ "chunk", "7a281548f1223664b855b10b08e59e84389ccabeb742517f6cd75eda2724a798"],
-    [ "chunk", "fadeccee86b123088bbc452df10e8fbc99d4c2f22a70ef7a35605ec8e439c345"],
-    [ "chunk", "5d62398419e6d136771541f3d2215e0ce31b1be45e99dbc64b43a4b734b447ca"],
-    [ "name", "example.mp4" ],
-    [ "mime", "video/mp4" ],
-    [ "size", "4823449" ],
-    [ "server", "https://cdn.example.com" ],
-    [ "server", "https://nostr.download" ]
+    ["chunk", "7e668b56a58c7891e0cf263ea3f093b75eebade23d663a45aa9920f347b3d671"],
+    ["chunk", "9b9c44a91396f19fd8700986eb0586dff2dcccf96c75bc2caefef302bcd78da1"],
+    ["chunk", "7a281548f1223664b855b10b08e59e84389ccabeb742517f6cd75eda2724a798"],
+    ["chunk", "fadeccee86b123088bbc452df10e8fbc99d4c2f22a70ef7a35605ec8e439c345"],
+    ["chunk", "5d62398419e6d136771541f3d2215e0ce31b1be45e99dbc64b43a4b734b447ca"],
+    ["name", "example.mp4"],
+    ["mime", "video/mp4"],
+    ["size", "4823449"],
+    ["server", "https://cdn.example.com"],
+    ["server", "https://nostr.download"]
   ]
 }
 ```

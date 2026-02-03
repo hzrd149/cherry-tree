@@ -7,10 +7,6 @@ export const CHUNK_SIZE_SMALL = mb;
 
 export const SERVER_ADVERTIZEMENT_KIND = 36363;
 
-export const DEFAULT_RELAYS = mergeRelaySets([
-  "wss://relay.damus.io/",
-  "wss://nos.lol/",
-  "wss://relay.primal.net/"
-]);
+export const DEFAULT_RELAYS = mergeRelaySets(["wss://relay.damus.io/", "wss://nos.lol/", "wss://relay.primal.net/"]);
 
 export const LOOKUP_RELAYS = mergeRelaySets(["wss://purplepag.es/"]);

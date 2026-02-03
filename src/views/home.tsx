@@ -1,14 +1,16 @@
 import { Button, Flex, Heading } from "@chakra-ui/react";
-import { TimelineModel } from "applesauce-core/models";
-import { useEventModel, useObservableState } from "applesauce-react/hooks";
+import { castTimelineStream } from "applesauce-common/observable";
+import { useObservableState } from "applesauce-react/hooks";
+import { use$ } from "applesauce-react/hooks/use-$";
 import { neventEncode } from "nostr-tools/nip19";
 import { useNavigate } from "react-router";
 
+import { ChunkedBlob } from "../casts/chunked-blob";
 import { ErrorBoundary } from "../components/error-boundary";
 import FileCard from "../components/file-card";
 import FileUpload from "../components/file-picker";
-import { getArchiveMimeType, getArchiveName, getArchiveSize, isValidArchive } from "../helpers/archive";
 import useTimeline from "../hooks/use-timeline";
+import { eventStore } from "../services/nostr";
 import { defaultRelays } from "../services/settings";
 import state, { addFiles, removeFile } from "../services/state";
 
@@ -19,7 +21,11 @@ export default function HomeView() {
   const relays = useObservableState(defaultRelays);
   useTimeline(relays, { kinds: [2001] });
 
-  const archives = useEventModel(TimelineModel, [{ kinds: [2001] }])?.filter(isValidArchive);
+  // Cast timeline to ChunkedBlob instances
+  const archives = use$(
+    () => eventStore.timeline({ kinds: [2001] }).pipe(castTimelineStream(ChunkedBlob, eventStore)),
+    [relays?.join("|")],
+  );
 
   const handleFile = (files: File[]) => {
     const chunked = addFiles(files);
@@ -50,15 +56,15 @@ export default function HomeView() {
         Archives
       </Heading>
       {archives?.map((archive) => {
-        const nevent = neventEncode({ id: archive.id, author: archive.pubkey, relays: relays.slice(0, 2) });
+        const nevent = neventEncode({ id: archive.id, author: archive.event.pubkey, relays: relays.slice(0, 2) });
 
         return (
           <ErrorBoundary key={archive.id}>
             <FileCard
               to={`/archive/${nevent}`}
-              name={getArchiveName(archive) || "Unknown"}
-              type={getArchiveMimeType(archive)}
-              size={getArchiveSize(archive)}
+              name={archive.filename || "Unknown"}
+              type={archive.mimeType}
+              size={archive.size}
               copy={nevent}
             />
           </ErrorBoundary>

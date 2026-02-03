@@ -1,25 +1,22 @@
 import { Box, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
-import { bytesToHex } from "@noble/hashes/utils";
-import { EventModel } from "applesauce-core/models";
-import { useEventModel, useObservableMemo } from "applesauce-react/hooks";
-import { nip19, NostrEvent } from "nostr-tools";
+import { castEventStream } from "applesauce-common/observable";
+import { use$ } from "applesauce-react/hooks/use-$";
+import { nip19 } from "nostr-tools";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
+import { ChunkedBlob } from "../../casts/chunked-blob";
 import { CopyButton } from "../../components/copy-button";
 import RainbowButton from "../../components/rainbow-button";
 import ServerPicker from "../../components/server-picker";
-import { getArchiveChunkHashes, getArchiveName, getArchiveSummary } from "../../helpers/archive";
 import { Chunk } from "../../helpers/blob";
 import { readChunk } from "../../helpers/storage";
 import useUploader from "../../hooks/use-uploader";
-import { singleEventLoader } from "../../services/nostr";
+import { eventStore, singleEventLoader } from "../../services/nostr";
 import state from "../../services/state";
 
-function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: string }) {
-  const name = getArchiveName(archive);
-  const summary = getArchiveSummary(archive);
-  const hashes = useMemo(() => getArchiveChunkHashes(archive).map(bytesToHex), [archive]);
+function ArchiveUploadPage({ archive, nevent }: { archive: ChunkedBlob; nevent: string }) {
+  const hashes = useMemo(() => archive.chunkHashes, [archive.id]);
 
   const [servers, setServers] = useState<string[]>(state.servers.value);
   const anon = useDisclosure({ defaultIsOpen: true });
@@ -51,9 +48,9 @@ function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: s
     <Flex gap="2" direction="column">
       <Box>
         <CopyButton float="right" size="sm" value={nevent} aria-label="Copy link" variant="ghost" />
-        <Heading size="md">{name || archive.id.slice(0, 8)}</Heading>
+        <Heading size="md">{archive.filename || archive.id.slice(0, 8)}</Heading>
       </Box>
-      {summary && <Text whiteSpace="pre-line">{summary}</Text>}
+      {archive.summary && <Text whiteSpace="pre-line">{archive.summary}</Text>}
 
       <Flex gap="2" justifyContent="space-between" alignItems="flex-end" mt="2">
         <Heading size="md">Servers</Heading>
@@ -61,7 +58,7 @@ function ArchiveUploadPage({ archive, nevent }: { archive: NostrEvent; nevent: s
       <ServerPicker servers={servers} onChange={setServers} priceCheck={hashes[0]} />
 
       <Flex gap="2" mt="2" justifyContent="space-between" alignItems="flex-end">
-        <Heading size="sm">Chunks: {hashes.length}</Heading>
+        <Heading size="sm">Chunks: {archive.chunkCount}</Heading>
         <Switch size="sm" isChecked={anon.isOpen} onChange={anon.onToggle}>
           Anon
         </Switch>
@@ -98,11 +95,12 @@ export default function ArchiveUploadView() {
   const decoded = nip19.decode(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
-  const event = useEventModel(EventModel, [decoded.data.id]);
+  // Load and cast the archive event
+  const archive = use$(
+    () => singleEventLoader(decoded.data).pipe(castEventStream(ChunkedBlob, eventStore)),
+    [decoded.data.id],
+  );
 
-  // load single archive event
-  useObservableMemo(() => singleEventLoader(decoded.data), [decoded.data]);
-
-  if (!event) return <Spinner />;
-  return <ArchiveUploadPage archive={event} nevent={nevent} />;
+  if (!archive) return <Spinner />;
+  return <ArchiveUploadPage archive={archive} nevent={nevent} />;
 }

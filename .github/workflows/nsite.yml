@@ -30,8 +30,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Deploy to nsite
-        uses: sandwichfarm/nsite-action@v0.2.2
+      - name: Deploy nsite
+        uses: sandwichfarm/nsite-action@v0.3.0
         with:
-          sec: ${{ secrets.NSITE_BUNKER }}
+          nbunksec: ${{ secrets.NSITE_BUNKER }}
           directory: "./dist"

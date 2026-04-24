@@ -2,7 +2,7 @@ import { BehaviorSubject } from "rxjs";
 import { nanoid } from "nanoid";
 
 import { Chunk } from "../helpers/blob";
-import { defaultRelays, defaultServers } from "./settings";
+import { blobStorageBackend, defaultRelays, defaultServers } from "./settings";
 
 export type ChunkedFile = {
   id: string;
@@ -26,6 +26,7 @@ const state = {
   relays,
   downloaders,
   uploaders,
+  blobStorageBackend,
 };
 
 export function addFiles(files: File[]) {

@@ -4,10 +4,16 @@ import { saveAs } from "file-saver";
 
 import { useWallet } from "../providers/wallet-provider";
 import { Chunk, concatBlobs } from "../helpers/blob";
-import { listChunks, readChunk, saveChunk } from "../helpers/storage";
 import BlobHasher from "../worker/hasher";
 import { downloadChunks } from "../helpers/download";
 import state from "../services/state";
+import {
+  downloadBlobFromLocalBlossomCache,
+  getSelectedBlobStorageBackend,
+  hasChunkInSelectedStorage,
+  readChunkFromSelectedStorage,
+  saveChunkToSelectedStorage,
+} from "../helpers/blob-storage";
 
 type DownloaderOptions = {
   persist?: boolean;
@@ -32,19 +38,21 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
       const controller = new AbortController();
       setController(controller);
 
-      const folder = "storage" in navigator && opts?.persist ? await navigator.storage.getDirectory() : null;
-
       const chunks: (Chunk | null)[] = new Array(hashes.length).fill(null);
 
       // read local chunks
-      if (folder) {
+      if (opts?.persist) {
         for (let index = 0; index < hashes.length; index++) {
           const hash = hashes[index];
           try {
-            chunks[index] = await readChunk(folder, hash, index);
+            chunks[index] = await readChunkFromSelectedStorage(hash, index, controller.signal);
           } catch (error) {}
         }
       }
+
+      const cached = chunks.map((chunk, index) => (chunk ? hashes[index] : null));
+      setDownloaded(cached);
+      setVerified(cached);
 
       // create hasher
       const hasher = new BlobHasher();
@@ -55,14 +63,43 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
           setVerified((v) => [...v, chunk.hash]);
 
           chunks[chunk.index] = chunk;
-          if (folder) saveChunk(folder, chunk);
+          if (opts?.persist) saveChunkToSelectedStorage(chunk, controller.signal);
         } else setErrors((v) => ({ ...v, [chunk.hash]: new Error("Invalid Hash") }));
       };
 
       // download missing chunks
       // let optimized = false;
-      const blobs: (Blob | null)[] = new Array(hashes.length).fill(null);
-      const needDownload = downloaded.map((c, i) => (c === null ? hashes[i] : null));
+      const needDownload = chunks.map((chunk, i) => (chunk === null ? hashes[i] : null));
+
+      if (opts?.persist && getSelectedBlobStorageBackend() === "local-blossom") {
+        const downloadFromLocalCache = async (hash: string, index: number) => {
+          try {
+            const blob = await downloadBlobFromLocalBlossomCache(hash, servers, controller.signal);
+            hasher.addToQueue(blob, index);
+            setDownloaded((v) => [...v, hash]);
+            needDownload[index] = null;
+          } catch (error) {
+            if (error instanceof Error) setErrors((v) => ({ ...v, [hash]: error }));
+          }
+        };
+
+        const parallel = state.downloaders.value;
+        let batch: Promise<void>[] = [];
+        for (let index = 0; index < needDownload.length; index++) {
+          if (controller.signal.aborted) break;
+
+          const hash = needDownload[index];
+          if (hash === null) continue;
+
+          batch.push(downloadFromLocalCache(hash, index));
+          if (batch.length >= parallel) {
+            await Promise.allSettled(batch);
+            batch = [];
+          }
+        }
+        if (batch.length > 0) await Promise.allSettled(batch);
+      }
+
       await downloadChunks(servers, needDownload, {
         parallel: state.downloaders.value,
         signal: controller.signal,
@@ -77,7 +114,6 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
           return await wallet.send(request.amount);
         },
         onBlob: async (blob, index) => {
-          blobs[index] = blob;
           hasher.addToQueue(blob, index);
           setDownloaded((v) => [...v, hashes[index]]);
         },
@@ -101,23 +137,16 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
 
   // load cached chunks
   useEffect(() => {
-    if ("storage" in navigator) {
-      navigator.storage
-        .getDirectory()
-        .then((folder) => {
-          return listChunks(folder);
-        })
-        .then((files) => {
-          const arr: (string | null)[] = new Array(hashes.length).fill(null);
-          for (const file of files) {
-            const i = hashes.indexOf(file);
-            if (i !== -1) arr[i] = file;
-          }
-          setDownloaded(arr);
-          setVerified(arr);
-        });
-    }
-  }, []);
+    const controller = new AbortController();
+
+    Promise.all(hashes.map((hash) => hasChunkInSelectedStorage(hash, controller.signal))).then((available) => {
+      const arr = hashes.map((hash, index) => (available[index] ? hash : null));
+      setDownloaded(arr);
+      setVerified(arr);
+    });
+
+    return () => controller.abort();
+  }, [hashes]);
 
   useEffect(() => {
     return () => controller?.abort();

@@ -4,7 +4,7 @@ import { Filter, NostrEvent, persistEventsToCache } from "applesauce-core/helper
 import { eventStore } from "./nostr";
 
 export async function cacheRequest(filters: Filter[]): Promise<NostrEvent[]> {
-  return await window.nostrdb.filters(filters);
+  return await window.nostrdb.query(filters);
 }
 
 // save all events to cache

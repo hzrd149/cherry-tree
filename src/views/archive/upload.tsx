@@ -10,7 +10,7 @@ import { CopyButton } from "../../components/copy-button";
 import RainbowButton from "../../components/rainbow-button";
 import ServerPicker from "../../components/server-picker";
 import { Chunk } from "../../helpers/blob";
-import { readChunk } from "../../helpers/storage";
+import { readChunkFromSelectedStorage } from "../../helpers/blob-storage";
 import useUploader from "../../hooks/use-uploader";
 import { eventStore, singleEventLoader } from "../../services/nostr";
 import state from "../../services/state";
@@ -26,19 +26,19 @@ function ArchiveUploadPage({ archive, nevent }: { archive: ChunkedBlob; nevent: 
 
   // load cached chunks
   useEffect(() => {
-    if ("storage" in navigator) {
-      navigator.storage.getDirectory().then((folder) => {
-        Promise.all(
-          hashes.map(async (hash, index) => {
-            try {
-              return await readChunk(folder, hash, index);
-            } catch (error) {
-              return null;
-            }
-          }),
-        ).then(setChunks);
-      });
-    }
+    const controller = new AbortController();
+
+    Promise.all(
+      hashes.map(async (hash, index) => {
+        try {
+          return await readChunkFromSelectedStorage(hash, index, controller.signal);
+        } catch (error) {
+          return null;
+        }
+      }),
+    ).then(setChunks);
+
+    return () => controller.abort();
   }, [hashes.length]);
 
   const localChunks = useMemo(() => chunks.filter((c) => c !== null), [chunks]);

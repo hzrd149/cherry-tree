@@ -78,8 +78,8 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
       window.nostrdb.js:
-        specifier: ^0.6.0
-        version: 0.6.0(typescript@5.9.3)
+        specifier: ^0.7.0
+        version: 0.7.0(typescript@5.9.3)
       workbox-window:
         specifier: ^7.4.0
         version: 7.4.0
@@ -2966,8 +2966,8 @@ packages:
     engines: {node: '>= 8'}
     hasBin: true
 
-  window.nostrdb.js@0.6.0:
-    resolution: {integrity: sha512-P+EMfFFMr4Onv298DCt376B1zWQrU2mMHbc/IzQUUJOo47qm94t6G8L+A3g7+eX/0H4VC25OpUhexrptj89fPg==}
+  window.nostrdb.js@0.7.0:
+    resolution: {integrity: sha512-OQOuibJXUP+XQ44GDglmB5vBApifqxfjOEYpUF6gBktbQHeWnYXh2cF/kNLGJWrmLDl6pfUjctnfCHpA2nz4RQ==}
 
   workbox-background-sync@7.3.0:
     resolution: {integrity: sha512-PCSk3eK7Mxeuyatb22pcSx9dlgWNv3+M8PqPaYDokks8Y5/FX4soaOqj3yhAZr5k6Q5JWTOMYgaJBpbw11G9Eg==}
@@ -6417,7 +6417,7 @@ snapshots:
     dependencies:
       isexe: 2.0.0
 
-  window.nostrdb.js@0.6.0(typescript@5.9.3):
+  window.nostrdb.js@0.7.0(typescript@5.9.3):
     dependencies:
       applesauce-loaders: 5.1.0(typescript@5.9.3)
       applesauce-relay: 5.2.0(typescript@5.9.3)

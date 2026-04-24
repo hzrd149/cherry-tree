@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { EventTemplate, finalizeEvent, generateSecretKey } from "applesauce-core/helpers";
 import { Chunk } from "../helpers/blob";
-import { saveChunk } from "../helpers/storage";
+import { saveChunkToSelectedStorage } from "../helpers/blob-storage";
 import { uploadChunks } from "../helpers/upload";
 import { useWallet } from "../providers/wallet-provider";
 import state from "../services/state";
@@ -41,8 +41,6 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
       const controller = new AbortController();
       setController(controller);
 
-      // let optimized = false;
-      const folder = persist && "storage" in navigator ? await navigator.storage.getDirectory() : undefined;
       await uploadChunks(servers, chunks, {
         signal: controller.signal,
         parallel: state.uploaders.value,
@@ -51,7 +49,7 @@ export default function useUploader(servers: string[], chunks: Chunk[], anon: bo
         },
         onUpload: (server, sha256, chunk) => {
           setUploaded((v) => ({ ...v, [sha256]: [...(v[sha256] ?? []), server] }));
-          if (folder) saveChunk(folder, chunk);
+          if (persist) saveChunkToSelectedStorage(chunk, controller.signal);
         },
         onPayment: async (_server, _blob, _chunk, request) => {
           // optimize the wallet on the first payment

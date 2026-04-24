@@ -1,6 +1,6 @@
 import { hexToBytes } from "@noble/hashes/utils";
 import { getTagValue, KnownEvent } from "applesauce-core/helpers";
-import { NostrEvent } from "nostr-tools";
+import { NostrEvent } from "applesauce-core/helpers/event";
 
 export function getArchiveChunkHashes(archive: NostrEvent) {
   const chunks = archive.tags.filter((t) => t[0] === "chunk").map((t) => t[1]);

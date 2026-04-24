@@ -2,7 +2,7 @@ import { useToast } from "@chakra-ui/react";
 import { createUploadAuth } from "blossom-client-sdk";
 import { useCallback, useEffect, useState } from "react";
 
-import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
+import { EventTemplate, finalizeEvent, generateSecretKey } from "applesauce-core/helpers";
 import { Chunk } from "../helpers/blob";
 import { saveChunk } from "../helpers/storage";
 import { uploadChunks } from "../helpers/upload";

@@ -2,7 +2,7 @@ import { Button, CloseButton, Flex, Input, Link, Text, useToast } from "@chakra-
 import { getTagValue, unixNow } from "applesauce-core/helpers";
 import { TimelineModel } from "applesauce-core/models";
 import { useEventModel } from "applesauce-react/hooks";
-import { Filter } from "nostr-tools";
+import { Filter } from "applesauce-core/helpers/filter";
 import { FormEventHandler, useState } from "react";
 
 import useTimeline from "../hooks/use-timeline";

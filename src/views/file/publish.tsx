@@ -14,8 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import { useObservableState } from "applesauce-react/hooks";
-import { EventTemplate, finalizeEvent, generateSecretKey } from "nostr-tools";
-import { neventEncode } from "nostr-tools/nip19";
+import { EventTemplate, finalizeEvent, generateSecretKey, neventEncode } from "applesauce-core/helpers";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 

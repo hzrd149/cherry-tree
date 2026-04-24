@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, Spinner, Switch, Text, useDisclosure } from "@chakra-ui/react";
 import { castEventStream } from "applesauce-common/observable";
 import { use$ } from "applesauce-react/hooks/use-$";
-import { nip19 } from "nostr-tools";
+import { decodePointer } from "applesauce-core/helpers";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 
@@ -92,7 +92,7 @@ function ArchiveUploadPage({ archive, nevent }: { archive: ChunkedBlob; nevent: 
 export default function ArchiveUploadView() {
   const { nevent } = useParams();
   if (!nevent) throw new Error("Missing nevent");
-  const decoded = nip19.decode(nevent);
+  const decoded = decodePointer(nevent);
   if (decoded.type !== "nevent") throw new Error(`Unsupported ${decoded.type}`);
 
   // Load and cast the archive event

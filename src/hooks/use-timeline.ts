@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useEventStore } from "applesauce-react/hooks";
 import hash_sum from "hash-sum";
-import { Filter } from "nostr-tools";
+import { Filter } from "applesauce-core/helpers";
 import { createTimelineLoader } from "applesauce-loaders/loaders";
 
 import { cacheRequest } from "../services/cache";

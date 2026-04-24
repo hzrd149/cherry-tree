@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@chakra-ui/react";
+import { saveAs } from "file-saver";
 
 import { useWallet } from "../providers/wallet-provider";
 import { Chunk, concatBlobs } from "../helpers/blob";
@@ -89,11 +90,8 @@ export default function useDownloader(servers: string[], hashes: string[], opts?
       if (chunks.some((c) => c === null)) throw new Error("Missing Chunks");
       const blob = await concatBlobs(chunks as Chunk[]);
 
-      // open download window
-      if (opts?.name || opts?.type) {
-        const file = new File([blob], opts?.name || "file", { type: opts.type });
-        window.open(URL.createObjectURL(file), "_blank");
-      } else window.open(URL.createObjectURL(blob));
+      const file = new File([blob], opts?.name || "file", { type: opts?.type });
+      saveAs(file, file.name);
     } catch (error) {
       console.log(error);
       if (error instanceof Error) toast({ status: "error", description: error.message });

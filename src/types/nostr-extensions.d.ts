@@ -1,4 +1,4 @@
-import { EventTemplate, NostrEvent, UnsignedEvent, VerifiedEvent } from "nostr-tools";
+import { EventTemplate, NostrEvent, UnsignedEvent, VerifiedEvent } from "applesauce-core/helpers";
 
 export type Nip07Interface = {
   getPublicKey: () => Promise<string> | string;

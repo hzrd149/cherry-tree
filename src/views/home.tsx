@@ -2,7 +2,7 @@ import { Button, Flex, Heading } from "@chakra-ui/react";
 import { castTimelineStream } from "applesauce-common/observable";
 import { useObservableState } from "applesauce-react/hooks";
 import { use$ } from "applesauce-react/hooks/use-$";
-import { neventEncode } from "nostr-tools/nip19";
+import { neventEncode } from "applesauce-core/helpers";
 import { useNavigate } from "react-router";
 
 import { ChunkedBlob } from "../casts/chunked-blob";

@@ -24,7 +24,7 @@ export default function HomeView() {
   // Cast timeline to ChunkedBlob instances
   const archives = use$(
     () => eventStore.timeline({ kinds: [2001] }).pipe(castTimelineStream(ChunkedBlob, eventStore)),
-    [relays?.join("|")],
+    [],
   );
 
   const handleFile = (files: File[]) => {
